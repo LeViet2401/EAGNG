@@ -1,0 +1,33 @@
+\babel@toc {vietnamese}{}\relax 
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {1.1}{\ignorespaces Sơ đồ tổng quan quy trình kiểm tra và phân loại lỗi màn hình điện thoại.}}{4}{figure.caption.3}%
+\contentsline {figure}{\numberline {1.2}{\ignorespaces Sơ đồ kiến trúc hướng tiếp cận hai pha trong kiểm tra và phân loại lỗi màn hình điện thoại.}}{6}{figure.caption.4}%
+\contentsline {figure}{\numberline {1.3}{\ignorespaces Tiến trình xử lý dữ liệu và phát triển cấu trúc mô hình EAGNG trực tuyến.}}{10}{figure.caption.5}%
+\contentsline {figure}{\numberline {1.4}{\ignorespaces Mối quan hệ giữa mục tiêu, nội dung nghiên cứu và kết quả dự kiến của luận văn.}}{11}{figure.caption.6}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Cấu trúc tensor dữ liệu bốn kênh kết hợp kênh màu và kênh entropy cục bộ.}}{14}{figure.caption.8}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Quy trình tính toán bản đồ entropy cục bộ thông qua cửa sổ trượt lân cận.}}{16}{figure.caption.9}%
+\contentsline {figure}{\numberline {2.3}{\ignorespaces Quy trình xử lý dữ liệu qua lớp tích chập và lớp lấy mẫu giảm.}}{18}{figure.caption.10}%
+\contentsline {figure}{\numberline {2.4}{\ignorespaces Kiến trúc tổng thể của mạng Autoencoder nén và tái tạo ảnh màn hình.}}{19}{figure.caption.11}%
+\contentsline {figure}{\numberline {2.5}{\ignorespaces Cấu trúc khối học dư cơ bản với đường truyền tắt bảo toàn thông tin.}}{23}{figure.caption.12}%
+\contentsline {figure}{\numberline {2.6}{\ignorespaces Cơ chế chèn nút mới và phân tách kết nối trong Mạng Khí nơ-ron tăng trưởng.}}{28}{figure.caption.13}%
+\contentsline {figure}{\numberline {2.7}{\ignorespaces Sơ đồ cơ chế tích lũy bằng chứng trong vùng đệm $\mathcal {B}$ và kích hoạt huấn luyện cục bộ.}}{31}{figure.caption.14}%
+\contentsline {figure}{\numberline {2.8}{\ignorespaces Phân bố khoảng cách Gauss và ngưỡng phân định bất thường dựa trên quy tắc ba Sigma.}}{35}{figure.caption.15}%
+\contentsline {figure}{\numberline {2.9}{\ignorespaces Phân cụm các thành phần liên thông độc lập đại diện cho các dạng khuyết tật bề mặt.}}{37}{figure.caption.16}%
+\contentsline {figure}{\numberline {2.10}{\ignorespaces Cấu trúc phân loại các hướng tiếp cận lý thuyết trong bài toán học liên tục.}}{39}{figure.caption.17}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Sơ đồ kiến trúc tổng thể hai pha của hệ thống tự động phân loại khuyết tật màn hình điện thoại.}}{42}{figure.caption.19}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Mô phỏng không gian tiềm ẩn chuẩn với cấu trúc đồ thị Mạng khí Nơ-ron tăng trưởng ngoại tuyến và cơ chế xác định mẫu bất thường dựa trên khoảng cách ngưỡng $\mu + 3\sigma $.}}{50}{figure.caption.20}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Mô hình quy trình tổng hợp hình ảnh khuyết tật màn hình mô phỏng.}}{58}{figure.caption.21}%
+\addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Năm dạng khuyết tật hình học bề mặt màn hình điện thoại trong tập dữ liệu thực nghiệm.}}{67}{figure.caption.25}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Ba cấp độ cường độ khuyết tật từ mạnh đến yếu đại diện cho dạng khuyết tật đường tròn.}}{68}{figure.caption.26}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Sự biến thiên của chỉ số điều chỉnh Rand theo thời gian khi xuất hiện các dạng lỗi mới.}}{69}{figure.caption.28}%
+\contentsline {figure}{\numberline {4.4}{\ignorespaces Sự biến thiên của chỉ số thông tin tương hỗ chuẩn hóa theo chuỗi thời gian xử lý mẫu.}}{70}{figure.caption.29}%
+\contentsline {figure}{\numberline {4.5}{\ignorespaces Chỉ số độ thuần khiết phân cụm của các thuật toán theo từng giai đoạn xuất hiện lỗi.}}{71}{figure.caption.30}%
+\contentsline {figure}{\numberline {4.6}{\ignorespaces So sánh độ dịch chuyển trọng số nút cũ giữa các thuật toán theo chuỗi thời gian.}}{72}{figure.caption.31}%
+\contentsline {figure}{\numberline {4.7}{\ignorespaces Phân tích khả năng thích ứng linh hoạt và độ ổn định tô-pô của mạng EAGNG.}}{72}{figure.caption.32}%
+\contentsline {figure}{\numberline {4.8}{\ignorespaces Phân tích thời gian nhịp và tốc độ xử lý của EAGNG, SOINN và GNG.}}{73}{figure.caption.33}%
+\contentsline {figure}{\numberline {4.9}{\ignorespaces Trực quan hóa cấu trúc mạng và phân cụm của thuật toán EAGNG tại bước $3000$.}}{74}{figure.caption.34}%
+\contentsline {figure}{\numberline {4.10}{\ignorespaces Trực quan hóa cấu trúc mạng của thuật toán GNG truyền thống tại bước $3000$.}}{75}{figure.caption.35}%
+\contentsline {figure}{\numberline {4.11}{\ignorespaces Trực quan hóa cấu trúc mạng của thuật toán SOINN tại bước $3000$.}}{76}{figure.caption.36}%

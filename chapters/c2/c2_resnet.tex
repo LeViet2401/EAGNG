@@ -1,0 +1,83 @@
+\section{Mạng nơ-ron tích chập ResNet cho trích xuất đặc trưng hình thái}
+
+Trích xuất đặc trưng hình thái đóng vai trò quyết định đối với hiệu quả phân cụm các dạng khuyết tật bề mặt màn hình điện thoại trong Pha hai. Trong khi mô hình Autoencoder ở Pha một tập trung vào việc học phân phối ảnh bình thường để tái tạo dữ liệu, mô hình ở Pha hai cần trích xuất được các thông tin có tính phân biệt cao về hình học, hình thái và đường biên của vết lỗi. Kiến trúc mạng học dư ResNet được lựa chọn nhờ khả năng trích xuất đặc trưng sâu mà không gặp phải hiện tượng suy giảm tín hiệu gradient. Mục này phân tích cơ sở lý thuyết của học dư, phương pháp cải tiến lớp đầu vào cho luồng dữ liệu bốn kênh và vai trò của đặc trưng hình thái trong quy trình phân cụm trực tuyến của thuật toán EAGNG.
+
+\subsection{Cơ chế Học dư và Kiến trúc Residual Block}
+
+Khi tăng chiều sâu của các mạng nơ-ron tích chập truyền thống, mô hình thường gặp phải hiện tượng tiêu biến gradient hoặc bùng nổ gradient, dẫn đến độ chính xác huấn luyện bị suy giảm \cite{he2016deep}. Kiến trúc ResNet giải quyết triệt để thách thức này bằng cách giới thiệu cơ chế kết nối tắt hay còn gọi là đường truyền đồng nhất. Thay vì buộc các lớp tích chập phải học trực tiếp một ánh xạ mục tiêu đầy đủ, cơ chế này cấu trúc lại mạng để các lớp nơ-ron chỉ cần học phần dư chênh lệch giữa đầu vào và đầu ra.
+
+Giả sử ánh xạ gốc cần tối ưu hóa là $\mathcal{H}(x)$, kiến trúc học dư chuyển đổi bài toán thành việc tối ưu hóa hàm phần dư $\mathcal{F}(x) = \mathcal{H}(x) - x$. Khi đó, ánh xạ mục tiêu ban đầu được khôi phục theo Công thức \ref{eq:residual_learning}:
+
+\begin{equation}
+y = \mathcal{F}(x, \{W_i\}) + x
+\label{eq:residual_learning}
+\end{equation}
+
+Trong Công thức \ref{eq:residual_learning}, ký hiệu $y$ đại diện cho vectơ đầu ra của khối học dư, $x$ thể hiện vectơ đầu vào của khối, $W_i$ đại diện cho tập ma trận trọng số của các lớp tích chập trong khối, và $\mathcal{F}(x, \{W_i\})$ thể hiện ánh xạ phần dư cần học qua các lớp xử lý phi tuyến.
+
+Khi kích thước của đầu vào $x$ và đầu ra $\mathcal{F}$ trùng khớp nhau, phép cộng trực tiếp theo từng phần tử được thực hiện. Trong trường hợp kích thước không gian hoặc số lượng kênh thay đổi, một ma trận biến đổi tuyến tính $W_s$ được bổ sung vào đường truyền tắt để chuẩn hóa kích thước, như được mô tả trong Công thức \ref{eq:residual_projection}:
+
+\begin{equation}
+y = \mathcal{F}(x, \{W_i\}) + W_s x
+\label{eq:residual_projection}
+\end{equation}
+
+In Công thức \ref{eq:residual_projection}, ký hiệu $W_s$ đại diện cho ma trận ma trận chiếu tuyến tính được áp dụng để điều chỉnh số lượng kênh hoặc kích thước không gian của vectơ đầu vào $x$ sao cho đồng nhất với đầu ra của hàm phần dư.
+
+Cấu trúc hình học và luồng dữ liệu bên trong một khối học dư cơ bản được mô tả chi tiết trong Hình \ref{fig:residual_block_architecture}.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[every node/.style={transform shape, font=\fontsize{13pt}{16pt}\selectfont}, shift={(2,0)}]
+    % Main path nodes (kích thước lớn hơn, khoảng cách đều nhau)
+    \node (input)   at (0,6.0) [draw, fill=white, draw=black, thick, minimum width=3.2cm, minimum height=1cm] {Đầu vào $x$};
+    \node (conv1)   at (0,4.5) [draw, fill=white, draw=black, thick, minimum width=4.0cm, minimum height=1cm] {Lớp Tích chập};
+    \node (relu1)   at (0,3.0) [draw, fill=white, draw=black, thick, minimum width=4.0cm, minimum height=0.9cm] {Hàm ReLU};
+    \node (conv2)   at (0,1.5) [draw, fill=white, draw=black, thick, minimum width=4.0cm, minimum height=1cm] {Lớp Tích chập};
+    \node (sum)     at (0,0.0) [circle, fill=white, draw=black, ultra thick, inner sep=3pt] {$+$};
+    \node (relu2)   at (0,-1.5) [draw, fill=white, draw=black, thick, minimum width=4.0cm, minimum height=0.9cm] {Hàm ReLU};
+    \node (output)  at (0,-3.0) [draw, fill=white, draw=black, thick, minimum width=3.2cm, minimum height=1cm] {Đầu ra $y$};
+
+    % Main path arrows
+    \draw[->, thick, black] (input) -- (conv1);
+    \draw[->, thick, black] (conv1) -- (relu1);
+    \draw[->, thick, black] (relu1) -- (conv2);
+    \draw[->, thick, black] (conv2) -- (sum);
+    \draw[->, thick, black] (sum) -- (relu2);
+    \draw[->, thick, black] (relu2) -- (output);
+
+    % Shortcut path
+    \draw[->, ultra thick, black] (0,5.25) -- (3.8,5.25) -- (3.8,0.0) node[midway, right, font=\fontsize{13pt}{16pt}\selectfont] {Đường truyền tắt $x$} -- (sum);
+\end{tikzpicture}
+\caption{Cấu trúc khối học dư cơ bản với đường truyền tắt bảo toàn thông tin.}
+\label{fig:residual_block_architecture}
+\end{figure}
+
+
+Trong Hình \ref{fig:residual_block_architecture}, dòng dữ liệu gốc $x$ được chia làm hai nhánh. Nhánh chính trải qua các phép biến đổi tích chập phi tuyến để trích xuất tín hiệu biến đổi, trong khi nhánh đường truyền tắt bỏ qua các lớp biến đổi và cộng trực tiếp tín hiệu ban đầu vào đầu ra trước khi qua hàm kích hoạt cuối cùng.
+
+\subsection{Trích xuất đặc trưng hình thái cho luồng dữ liệu bốn kênh}
+
+Các mô hình ResNet tiền huấn luyện trên tập dữ liệu chuẩn thường được thiết kế để tiếp nhận đầu vào ảnh màu ba kênh. Trong hệ thống kiểm tra màn hình điện thoại, để khai thác tối đa thông tin từ kênh entropy cục bộ đã được ghép nối ở giai đoạn tiền xử lý, kiến trúc của lớp tích chập đầu tiên trong mạng ResNet cần được điều chỉnh cấu trúc trọng số \cite{szegedy2016rethinking}.
+
+Ma trận hạt nhân tích chập của lớp đầu tiên được mở rộng chiều không gian kênh từ ba lên bốn. Phép toán tích chập đối với tensor đầu vào bốn kênh $I_{\text{ext}} \in \mathbb{R}^{H \times W \times 4}$ tại bản đồ đặc trưng thứ $m$ được xác định theo Công thức \ref{eq:resnet_4channel_conv}:
+
+\begin{equation}
+F_m(i,j) = \sum_{c=1}^{4} \left( I_{\text{ext}, c} * K_{m,c} \right)(i,j) + b_m
+\label{eq:resnet_4channel_conv}
+\end{equation}
+
+Trong Công thức \ref{eq:resnet_4channel_conv}, ký hiệu $F_m(i,j)$ đại diện cho giá trị đặc trưng tại vị trí không gian $(i,j)$ trên bản đồ đặc trưng thứ $m$, $I_{\text{ext}, c}$ thể hiện kênh thứ $c$ của tensor ảnh đầu vào bốn kênh, $K_{m,c}$ là hạt nhân tích chập tương ứng với kênh $c$ của bộ lọc thứ $m$, toán tử $*$ thể hiện phép tích chập không gian hai chiều, và $b_m$ đại diện cho giá trị độ lệch của bộ lọc thứ $m$.
+
+Việc tích hợp đồng thời bốn kênh dữ liệu mang lại các lợi thế kỹ thuật trong quá trình học đặc trưng hình thái bao gồm:
+(i) ba kênh màu ban đầu cung cấp các thông tin về độ tương phản, mức xám và màu sắc tổng thể của vùng lỗi;
+(ii) kênh entropy cục bộ bổ sung các tín hiệu về sự đứt gãy kết cấu và biên giới không gian của vết khuyết tật;
+(iii) sự kết hợp qua các khối học dư cho phép mạng tự động tổng hợp các đặc trưng cấp cao biểu diễn chính xác hình thái hình học của các dạng lỗi phức tạp.
+
+\subsection{Vai trò của ResNet trong quy trình phân cụm trực tuyến EAGNG}
+
+Trong Pha hai của hệ thống, các hình ảnh chứa lỗi sau khi được phát hiện ở Pha một sẽ được chuyển sang công đoạn phân cụm trực tuyến. Mạng ResNet đóng vai trò là bộ trích xuất đặc trưng hình thái cố định, biến đổi mỗi ảnh khuyết tật thành một vectơ đặc trưng không gian $z_{\text{shape}} \in \mathbb{R}^d$. Nhờ khả năng biểu diễn hình học vượt trội của mạng tích chập sâu, các vết lỗi có cùng bản chất hình thái sẽ được ánh xạ thành các điểm dữ liệu nằm gần nhau trong không gian đặc trưng $d$ chiều.
+
+Vectơ đặc trưng $z_{\text{shape}}$ sau đó được đưa trực tiếp vào mạng EAGNG để thực hiện học và phân cụm trực tuyến theo thời gian thực. Sự kết hợp này mang lại hai ý nghĩa quan trọng cho bài toán kiểm tra chất lượng sản phẩm:
+(i) làm giảm số chiều của dữ liệu đầu vào cho mạng EAGNG so với việc sử dụng trực tiếp điểm ảnh thô, giúp tối ưu hóa tốc độ tính toán khoảng cách không gian;
+(ii) loại bỏ các yếu tố nhiễu nền không quan trọng, tập trung vào các đặc trưng cấu trúc như tỷ lệ khung hình, độ dốc biên và diện tích phân bố của vết lỗi, tạo điều kiện thuận lợi cho thuật toán EAGNG xây dựng cấu trúc đồ thị phân cụm chính xác.

@@ -1,0 +1,152 @@
+\section{Mạng nơ-ron không giám sát và Growing Neural Gas}
+
+Học không giám sát đóng vai trò then chốt trong việc khám phá cấu trúc ẩn và phân cụm dữ liệu mà không cần nhãn tiên lượng. Trong bài toán phân tích khuyết tật màn hình điện thoại, các thuật toán học không giám sát dạng phân vùng dựa trên đồ thị cho phép biểu diễn phân phối dữ liệu phức tạp trong không gian đặc trưng nhiều chiều. Các mô hình dựa trên nguyên lý học cạnh tranh như Mạng tự tổ chức, Khí nơ-ron và Khí nơ-ron tăng trưởng phản ánh quá trình tự thích ứng của tập hợp nút đối với mật độ dữ liệu đầu vào. Mục này trình bày tiến trình phát triển lý thuyết từ các mô hình mạng không gian cố định đến mạng tăng trưởng linh hoạt, làm cơ sở khoa học cho việc đề xuất mô hình cải tiến ở các chương sau.
+
+\subsection{Mạng tự tổ chức Kohonen}
+
+Mạng tự tổ chức được Kohonen đề xuất nhằm ánh xạ không gian dữ liệu nhiều chiều về không gian lưới thấp chiều mà vẫn bảo toàn quan hệ lân cận giữa các mẫu dữ liệu \cite{kohonen1982self}. Cấu trúc mạng bao gồm một lưới các nút nơ-ron được sắp xếp cố định trên mặt phẳng hai chiều, trong đó mỗi nút $i$ gắn liền với một vectơ trọng số $w_i \in \mathbb{R}^d$. Khi tiếp nhận một vectơ dữ liệu đầu vào $x \in \mathbb{R}^d$, mạng xác định nút chiến thắng $c(x)$ có khoảng cách Euclid nhỏ nhất tới $x$ theo Công thức \ref{eq:som_winner}:
+
+\begin{equation}
+c(x) = \arg\min_i \|x - w_i\|
+\label{eq:som_winner}
+\end{equation}
+
+Trong Công thức \ref{eq:som_winner}, ký hiệu $c(x)$ đại diện cho chỉ số của nút chiến thắng, $x$ thể hiện vectơ dữ liệu đầu vào trong không gian $d$ chiều, $w_i$ đại diện cho vectơ trọng số của nút nơ-ron thứ $i$, và $\| \cdot \|$ biểu diễn phép đo khoảng cách Euclid trong không gian thực.
+
+Sau khi xác định nút chiến thắng, trọng số của nút chiến thắng và các nút trong vùng lân cận không gian lưới được cập nhật theo Công thức \ref{eq:som_update}:
+
+\begin{equation}
+w_i(t+1) = w_i(t) + h_{ci}(t) \left[ x(t) - w_i(t) \right]
+\label{eq:som_update}
+\end{equation}
+
+Trong Công thức \ref{eq:som_update}, ký hiệu $w_i(t)$ đại diện cho vectơ trọng số của nút thứ $i$ tại bước thời gian $t$, $x(t)$ thể hiện mẫu dữ liệu đầu vào tại bước $t$, và $h_{ci}(t)$ đại diện cho hàm lân cận không gian giữa nút chiến thắng $c$ và nút $i$. Hàm lân cận $h_{ci}(t)$ thường được xác định bởi hàm Gauss suy giảm theo thời gian và khoảng cách lưới giữa hai nút, được tính theo Công thức \ref{eq:som_neighborhood}:
+
+\begin{equation}
+h_{ci}(t) = \alpha(t) \cdot \exp\left( -\frac{\|r_c - r_i\|^2}{2\sigma^2(t)} \right)
+\label{eq:som_neighborhood}
+\end{equation}
+
+Trong Công thức \ref{eq:som_neighborhood}, ký hiệu $\alpha(t)$ đại diện cho tốc độ học tại bước $t$, $r_c$ và $r_i$ lần lượt thể hiện tọa độ vị trí cố định của nút $c$ và nút $i$ trên lưới hai chiều, và $\sigma(t)$ đại diện cho bán kính vùng lân cận suy giảm theo thời gian.
+
+Mô hình Mạng tự tổ chức sở hữu ưu thế về khả năng trực quan hóa dữ liệu cấu trúc cao về dạng lưới hai chiều dễ quan sát. Tuy nhiên, kiến trúc này bộc lộ những hạn chế kỹ thuật đáng kể khi áp dụng vào dữ liệu khuyết tật thực tế:
+(i) số lượng nút nơ-ron và cấu trúc lưới cố định buộc người dùng phải xác định trước, làm giảm tính dẻo khi phân phối dữ liệu thay đổi;
+(ii) sự ràng buộc không gian lưới cứng nhắc dễ dẫn đến tình trạng các nút bị kéo dãn vào các vùng không có dữ liệu;
+(iii) tốc độ học và bán kính lân cận suy giảm dần về không khiến mạng mất khả năng học các mẫu dữ liệu mới xuất hiện ở giai đoạn sau.
+
+\subsection{Mạng Khí nơ-ron}
+
+Mạng Khí nơ-ron do Martinetz và Schulten đề xuất nhằm loại bỏ sự ràng buộc của cấu trúc lưới không gian cố định trong Mạng tự tổ chức \cite{martinetz1991neural}. Thay vì dựa vào vị trí hình học trên lưới, Mạng Khí nơ-ron sắp xếp thứ tự các nút nơ-ron dựa trên khoảng cách không gian đặc trưng thực tế tới mẫu dữ liệu đầu vào. Đối với mỗi mẫu $x$, mạng tính toán khoảng cách tới toàn bộ các nút và gán chỉ số xếp hạng $k_i(x, W) \in \{0, 1, \dots, N-1\}$, trong đó nút gần nhất có chỉ số bằng không.
+
+Quy tắc cập nhật trọng số cho tất cả các nút nơ-ron trong Mạng Khí nơ-ron được thực hiện theo Công thức \ref{eq:ng_update}:
+
+\begin{equation}
+w_i(t+1) = w_i(t) + \epsilon(t) \cdot \exp\left( -\frac{k_i(x, W)}{\lambda(t)} \right) \left[ x(t) - w_i(t) \right]
+\label{eq:ng_update}
+\end{equation}
+
+Trong Công thức \ref{eq:ng_update}, ký hiệu $w_i(t)$ đại diện cho vectơ trọng số của nút thứ $i$ tại bước $t$, $x(t)$ là mẫu dữ liệu đầu vào, $k_i(x, W)$ thể hiện thứ tự xếp hạng khoảng cách của nút $i$ so với mẫu $x$, $\epsilon(t)$ đại diện cho tốc độ học tại bước $t$, và $\lambda(t)$ thể hiện hằng số suy giảm phạm vi ảnh hưởng của thứ tự xếp hạng.
+
+Mô hình Khí nơ-ron đạt được tốc độ hội tụ nhanh hơn và giảm thiểu sai số biểu diễn đáng kể so với Mạng tự tổ chức nhờ không bị giới hạn bởi lưới hai chiều cố định. Mặc dù vậy, thuật toán vẫn duy trì các điểm hạn chế cốt lõi bao gồm:
+(i) tổng số lượng nút nơ-ron $N$ vẫn phải được thiết lập cố định từ trước;
+(ii) chi phí tính toán tăng nhanh do phải sắp xếp thứ tự khoảng cách cho toàn bộ các nút tại mỗi bước học;
+(iii) sự suy giảm theo thời gian của các tham số $\epsilon(t)$ và $\lambda(t)$ cản trở mạng thích ứng với luồng dữ liệu học liên tục.
+
+\subsection{Mạng Khí nơ-ron tăng trưởng}
+
+Mạng khí nơ-ron tăng trưởng do Fritzke đề xuất là bước phát triển quan trọng giúp giải quyết triệt để hạn chế về số lượng nút cố định của các mô hình tiền nhiệm \cite{fritzke1995growing}. Thuật toán bắt đầu với một tập hợp gồm hai nút ban đầu và tự động bổ sung nút mới hoặc xóa bỏ các kết nối không hiệu quả dựa trên việc tích lũy sai số cục bộ. Mạng duy trì một tập hợp các nút $A$ và một tập hợp các cạnh nối $C$ giữa các cặp nút để phản ánh cấu trúc đồng dạng hình học của dữ liệu.
+
+Quy trình cập nhật của thuật toán Mạng Khí nơ-ron tăng trưởng khi tiếp nhận một mẫu dữ liệu $x$ được thực hiện theo chuỗi các bước toán học:
+
+Đầu tiên, mạng xác định hai nút gần $x$ nhất, ký hiệu là nút chiến thắng thứ nhất $s_1$ và nút chiến thắng thứ hai $s_2$, thỏa mãn điều kiện khoảng cách theo Công thức \ref{eq:gng_winners}:
+
+\begin{equation}
+s_1 = \arg\min_{i \in A} \|x - w_i\|, \quad s_2 = \arg\min_{i \in A \setminus \{s_1\}} \|x - w_i\|
+\label{eq:gng_winners}
+\end{equation}
+
+Trong Công thức \ref{eq:gng_winners}, ký hiệu $s_1$ và $s_2$ lần lượt đại diện cho chỉ số của nút chiến thắng thứ nhất và thứ hai trong tập hợp nút $A$, $x$ thể hiện mẫu dữ liệu đầu vào, và $w_i$ đại diện cho vectơ trọng số của nút $i$.
+
+Thứ hai, mạng tăng tuổi của tất cả các cạnh nối xuất phát từ $s_1$. Nếu giữa $s_1$ và $s_2$ chưa có cạnh nối, mạng tạo một cạnh mới nối hai nút này và đặt tuổi bằng không. Sai số tích lũy của nút chiến thắng $s_1$ được cập nhật theo Công thức \ref{eq:gng_error_update}:
+
+\begin{equation}
+E_{s_1} \leftarrow E_{s_1} + \|x - w_{s_1}\|^2
+\label{eq:gng_error_update}
+\end{equation}
+
+Trong Công thức \ref{eq:gng_error_update}, ký hiệu $E_{s_1}$ đại diện cho giá trị sai số tích lũy của nút $s_1$, $x$ thể hiện mẫu dữ liệu đầu vào, và $w_{s_1}$ đại diện cho vectơ trọng số của nút $s_1$.
+
+Thứ ba, vị trí trọng số của nút chiến thắng $s_1$ và các nút lân cận $n$ có kết nối trực tiếp với $s_1$ được điều chỉnh dịch chuyển về phía mẫu $x$ theo Công thức \ref{eq:gng_weight_update_s1} và Công thức \ref{eq:gng_weight_update_neighbors}:
+
+\begin{equation}
+w_{s_1} \leftarrow w_{s_1} + \epsilon_b (x - w_{s_1})
+\label{eq:gng_weight_update_s1}
+\end{equation}
+
+\begin{equation}
+w_n \leftarrow w_n + \epsilon_n (x - w_n), \quad \forall n \in N_{s_1}
+\label{eq:gng_weight_update_neighbors}
+\end{equation}
+
+Trong Công thức \ref{eq:gng_weight_update_s1} và Công thức \ref{eq:gng_weight_update_neighbors}, ký hiệu $\epsilon_b$ đại diện cho tốc độ học của nút chiến thắng, $\epsilon_n$ thể hiện tốc độ học của các nút lân cận, và $N_{s_1}$ đại diện cho tập hợp các nút có cạnh nối trực tiếp với nút $s_1$.
+
+Thứ tư, sau một chu kỳ cố định $\lambda$ bước học, mạng phát hiện nút $q$ có sai số tích lũy lớn nhất và nút $f$ có sai số lớn nhất trong số các nút lân cận của $q$. Một nút mới $r$ được chèn vào giữa $q$ và $f$ với trọng số được khởi tạo theo Công thức \ref{eq:gng_new_node}:
+
+\begin{equation}
+w_r = \frac{1}{2}(w_q + w_f)
+\label{eq:gng_new_node}
+\end{equation}
+
+Trong Công thức \ref{eq:gng_new_node}, ký hiệu $w_r$ đại diện cho vectơ trọng số của nút mới bổ sung, $w_q$ và $w_f$ lần lượt thể hiện vectơ trọng số của hai nút có sai số lớn nhất. Sau khi chèn nút $r$, cạnh nối giữa $q$ và $f$ bị xóa bỏ, đồng thời hai cạnh mới nối $r$ với $q$ và $r$ với $f$ được tạo lập.
+
+Quá trình thêm nút mới và tái cấu trúc liên kết đồ thị trong Mạng Khí nơ-ron tăng trưởng được mô tả trực quan trong Hình \ref{fig:gng_insertion_mechanism}.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[every node/.style={transform shape, font=\fontsize{13pt}{16pt}\selectfont}]
+    % Subfigure A: Before insertion
+    \begin{scope}[shift={(0,0)}]
+        \node[draw, circle, fill=blue!20, thick, minimum size=0.8cm] (q) at (0,2) {$q$};
+        \node[draw, circle, fill=blue!20, thick, minimum size=0.8cm] (f) at (3,2) {$f$};
+        \node[draw, circle, fill=gray!20, thick, minimum size=0.8cm] (n1) at (-1,0.5) {};
+        \node[draw, circle, fill=gray!20, thick, minimum size=0.8cm] (n2) at (4,0.5) {};
+        
+        \draw[thick, black] (q) -- (f) node[midway, above, font=\fontsize{13pt}{16pt}\selectfont] {Cạnh cũ};
+        \draw[thick, gray] (q) -- (n1);
+        \draw[thick, gray] (f) -- (n2);
+        
+        \node[align=center, font=\fontsize{13pt}{16pt}\selectfont] at (1.5,-0.8) {Cấu trúc mạng trước khi thêm nút};
+    \end{scope}
+
+    % Transition Arrow
+    \draw[->, ultra thick, black] (4.3, 1.2) -- (5.5, 1.2) node[midway, above, font=\fontsize{13pt}{16pt}\selectfont] {Thêm nút $r$};
+
+    % Subfigure B: After insertion
+    \begin{scope}[shift={(7,0)}]
+        \node[draw, circle, fill=blue!20, thick, minimum size=0.8cm] (q2) at (0,2) {$q$};
+        \node[draw, circle, fill=teal!30, draw=teal!80, ultra thick, minimum size=0.8cm] (r) at (1.5,2) {$r$};
+        \node[draw, circle, fill=blue!20, thick, minimum size=0.8cm] (f2) at (3,2) {$f$};
+        \node[draw, circle, fill=gray!20, thick, minimum size=0.8cm] (n12) at (-1,0.5) {};
+        \node[draw, circle, fill=gray!20, thick, minimum size=0.8cm] (n22) at (4,0.5) {};
+        
+        \draw[thick, teal!80] (q2) -- (r);
+        \draw[thick, teal!80] (r) -- (f2);
+        \draw[thick, gray] (q2) -- (n12);
+        \draw[thick, gray] (f2) -- (n22);
+        
+        \node[align=center, font=\normalsize] at (1.5,-0.8) {Cấu trúc mạng sau khi chèn nút $r$};
+    \end{scope}
+\end{tikzpicture}
+\caption{Cơ chế chèn nút mới và phân tách kết nối trong Mạng Khí nơ-ron tăng trưởng.}
+\label{fig:gng_insertion_mechanism}
+\end{figure}
+
+Trong Hình \ref{fig:gng_insertion_mechanism}, nút $q$ và nút $f$ đại diện cho hai nút có sai số tích lũy lớn nhất. Khi thỏa mãn điều kiện chu kỳ $\lambda$, nút mới $r$ được chèn vào trung điểm không gian giữa $q$ và $f$, đồng thời kết nối cũ giữa $q$ và $f$ được thay thế bằng hai kết nối mới tới $r$.
+
+Mặc dù Mạng Khí nơ-ron tăng trưởng sở hữu năng lực tự thích ứng cấu trúc đồ thị mạnh mẽ, mô hình này vẫn bộc lộ các điểm hạn chế nghiêm trọng khi triển khai trong hệ thống học trực tuyến kiểm tra vết lỗi màn hình:
+(i) tần suất thêm nút mới phụ thuộc hoàn toàn vào ngưỡng chu kỳ cố định $\lambda$ mà không xét đến mật độ dữ liệu thực tế tại vùng không gian xét duyệt, dẫn đến nguy cơ bùng nổ số lượng nút tại các vùng dữ liệu dày đặc;
+(ii) mạng thiếu cơ chế phân biệt giữa dữ liệu nhiễu ngẫu nhiên và vết lỗi thực sự, khiến các mẫu nhiễu đứng đơn lẻ cũng tích lũy sai số và kích hoạt quá trình sinh nút không cần thiết;
+(iii) hiện tượng quên thảm họa xảy ra khi luồng dữ liệu lỗi xuất hiện theo chuỗi thời gian, do các nút cũ liên tục bị điều chỉnh trọng số về phía dữ liệu mới mà không có cơ chế đóng băng hoặc bảo tồn bằng vùng đệm bằng chứng;
+(iv) việc kết nối các nút chỉ dựa trên khoảng cách giữa hai nút chiến thắng $s_1$ và $s_2$ dễ gây ra hiện tượng nối nhầm cạnh giữa hai cụm khuyết tật nằm gần nhau về mặt không gian nhưng khác biệt về thuộc tính hình thái.
+
+Những hạn chế nêu trên tạo nền tảng lý thuyết trực tiếp cho việc phát triển mô hình EAGNG trong luận văn này, nơi các cơ chế tích lũy bằng chứng, kiểm soát mật độ và kiểm tra chồng lấp hình học bao được tích hợp nhằm nâng cao tính ổn định và độ chính xác phân cụm.

@@ -1,0 +1,20 @@
+\begin{center}
+\textbf{\large{Abstract}}
+\end{center}
+
+\addcontentsline{toc}{chapter}{Abstract}
+
+\begin{small}
+
+This thesis investigates an automated surface defect classification method for mobile phone display inspection using a two-stage dynamic neural network. The system integrates image processing techniques, deep neural architectures, and an evidence-accumulating growing neural gas (EAGNG) algorithm. The proposed approach addresses the scarcity of initially labeled samples and mitigates catastrophic forgetting during continuous stream processing.
+
+The first stage executes offline anomaly detection on normal display samples. Input images are enhanced with local entropy map channels to represent surface texture variations. An autoencoder network compresses the four-channel images into latent space feature vectors. A standard growing neural gas network learns the topology of normal samples in the latent space. During inference, feature vectors with distances exceeding three standard deviations ($3\sigma$) from the network nodes are flagged as anomalies and transferred to the second stage.
+
+The second stage performs online defect clustering through the proposed EAGNG dynamic learning algorithm. Morphological feature vectors extracted from a ResNet backbone operating on entropy-enhanced images serve as input to the network. The EAGNG algorithm incorporates four specific mechanisms: (i) node age-dependent learning rate and error accumulation decay to facilitate structural convergence, (ii) evidence-based deferred node insertion using buffer accumulation to filter local noise, (iii) density-aware topology growth to regulate node spatial distribution, and (iv) bounding box overlap checks to prevent invalid edges between distinct clusters. A connected-component graph clustering algorithm is applied to the resulting topology to output final defect categories.
+
+Experimental evaluation across a sequence of three thousand time steps (3000 steps) confirms the quantitative performance of the EAGNG algorithm. In the stable clustering phase between step 650 and step 1800, the EAGNG model achieves a value of 100\% across the adjusted Rand index (ARI), normalized mutual information (NMI), and purity metrics. During the concept drift phase from step 1850 to step 3000, the EAGNG model maintains an average ARI of 89.98\%, NMI of 92.30\%, and purity of 95.49\%. Across the full evaluation window from step 650 to step 3000, the model achieves mean values of 94.99\% for ARI, 96.15\% for NMI, and 97.74\% for purity. At the final time step, the EAGNG topology contains 268 nodes compared to 361 nodes in the standard growing neural gas network, representing a 25.76\% reduction in node memory allocation, while requiring 16.39 seconds of cumulative execution time compared to 23.69 seconds for the baseline model.
+
+\vspace*{1cm}
+\textbf{Keywords}: \textit{display defect detection}, \textit{unsupervised learning}, \textit{competitive learning}, \textit{growing neural gas (GNG)}, \textit{autoencoder}, \textit{ResNet}, \textit{local entropy}, \textit{catastrophic forgetting}
+
+\end{small}

@@ -1,0 +1,155 @@
+\section{Công cụ tự động sinh tập dữ liệu khuyết tật mô phỏng}
+
+Thuật toán phân cụm trực tuyến EAGNG yêu cầu một cơ chế kiểm thử tính thích ứng trước các biến đổi đột ngột và liên tục của dòng dữ liệu đầu vào. Do việc thu thập các hình ảnh lỗi thực tế trên dây chuyền sản xuất màn hình điện thoại thường gặp hạn chế về số lượng và sự đa dạng của các dạng khuyết tật, công cụ sinh dữ liệu tự động thích nghi đã được phát triển nhằm mục đích chủ động tạo ra các tập dữ liệu mô phỏng theo mô hình thống kê học \cite{gonzalez2018digital}. Mô hình này thực hiện việc tổng hợp ngẫu nhiên các cấu trúc nhiễu nền của màn hình chuẩn kết hợp với sự chèn lặp các dạng lỗi hình thái có kiểm soát về vị trí, kích thước và độ tương phản quang học.
+
+Luận văn đề xuất quy trình tự động sinh dữ liệu hình ảnh được chia thành hai giai đoạn tính toán chính bao gồm giai đoạn mô phỏng nền màn hình và giai đoạn tổng hợp khuyết tật. Quy trình xử lý tổng thể của công cụ sinh dữ liệu được thể hiện trong Hình \ref{fig:generator_workflow}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[node distance=1.0cm, auto, >=Latex, font=\normalsize]
+  \tikzstyle{block} = [draw, fill=black!5, rectangle, minimum height=0.8cm, minimum width=3.2cm, text centered, rounded corners=2pt]
+  \tikzstyle{line} = [draw, ->, thick]
+
+  \node [block] (param) {Khởi tạo thông số hình học};
+  \node [block, below=0.7cm of param] (bg) {Mô phỏng nhiễu nền phân phối chuẩn};
+  \node [block, below=0.7cm of bg] (defect) {Tạo mặt nạ khuyết tật hình thái};
+  \node [block, below=0.7cm of defect] (blur) {Lọc trung vị và hòa trộn quang học};
+  \node [block, below=0.7cm of blur] (output) {Xuất ảnh kiểm thử màn hình};
+
+  \path [line] (param) -- (bg);
+  \path [line] (bg) -- (defect);
+  \path [line] (defect) -- (blur);
+  \path [line] (blur) -- (output);
+\end{tikzpicture}
+\caption{Mô hình quy trình tổng hợp hình ảnh khuyết tật màn hình mô phỏng.}
+\label{fig:generator_workflow}
+\end{figure}
+
+Sơ đồ trong Hình \ref{fig:generator_workflow} minh họa các bước tính toán nối tiếp nhau nhằm tạo ra một hình ảnh màn hình hoàn chỉnh. Quá trình bắt đầu từ việc xác định các tham số không gian, tiếp tục qua việc tạo cấu trúc bề mặt bằng phân phối thống kê, sau đó vẽ mặt nạ khuyết tật và cuối cùng áp dụng bộ lọc mờ trung vị để đảm bảo tính liên tục của ranh giới điểm ảnh.
+
+Trong giai đoạn mô phỏng nền màn hình, độ sáng của mỗi điểm ảnh tại tọa độ $(r, c)$ trên khung hình kích thước $H \times W$ điểm ảnh được tính toán kết hợp giữa thành phần biến ngẫu nhiên theo phân phối chuẩn và thành phần ngẫu nhiên động. Công thức (\ref{eq:bg_synthesis}) biểu diễn mô hình toán học tạo mức xám nền cho ảnh:
+
+\begin{equation}
+I_{bg}(r, c) = \text{clip}\left(0.8 \cdot \eta(r, c) + 0.2 \cdot \left[ B_{min} + U \cdot (B_{max} - B_{min}) \right], 0, 255\right)
+\label{eq:bg_synthesis}
+\end{equation}
+
+Trong Công thức (\ref{eq:bg_synthesis}), ký hiệu $\eta(r, c) \sim \mathcal{N}(\mu, \sigma^2)$ đại diện cho mẫu ngẫu nhiên thu được từ phân phối chuẩn với giá trị trung bình $\mu = 215$ và độ lệch chuẩn $\sigma \in \{5, 7\}$, biến số $U \sim \mathcal{U}(0, 1)$ đại diện cho biến ngẫu nhiên phân phối đều trong khoảng từ zero đến một, và toán hàm $\text{clip}(x, 0, 255)$ thực hiện việc ép giá trị điểm ảnh nằm trong miền giới hạn mức xám từ 0 đến 255 theo chuẩn biểu diễn số nguyên tám bit. Các ngưỡng biên động $B_{min}$ và $B_{max}$ trong Công thức~(\ref{eq:bg_synthesis}) được xác định dựa trên Công thức~(\ref{eq:boundary_clamp}):
+
+\begin{equation}
+B_{min} = \max(0, \mu - 4\sigma), \quad B_{max} = \min(255, \mu + 3\sigma)
+\label{eq:boundary_clamp}
+\end{equation}
+
+Công thức~(\ref{eq:boundary_clamp}) đảm bảo rằng thành phần độ sáng nền duy trì tính ổn định thống kê nhưng vẫn tạo ra sự biến thiên nhẹ giữa các khung hình nhằm mô phỏng nhiễu cảm biến quang học thực tế. Khi khởi tạo hình ảnh đạt tiêu chuẩn, giá trị độ lệch chuẩn $\sigma = 7$ được áp dụng để mô phỏng nhiễu phân tán rộng, trong khi hình ảnh chứa lỗi sử dụng giá trị $\sigma = 5$.
+
+Đối với giai đoạn tạo khuyết tật, vị trí trung tâm $(x_d, y_d)$ của vùng lỗi được khống chế trong vùng không gian hiển thị an toàn nhằm tránh hiện tượng khuyết tật bị cắt đứt tại biên khung ảnh. Giới hạn tọa độ được mô tả qua Công thức~(\ref{eq:spatial_constraint}):
+
+\begin{equation}
+x_d \in \left[ \alpha_x W, (1 - \alpha_x) W \right], \quad y_d \in \left[ \alpha_y H, (1 - \alpha_y) H \right]
+\label{eq:spatial_constraint}
+\end{equation}
+
+Trong Công thức~(\ref{eq:spatial_constraint}), thông số $\alpha_x = 0.15$ và $\alpha_y = 0.15$ đại diện cho tỷ lệ khoảng lùi tương đối so với chiều rộng $W = 540$ điểm ảnh và chiều cao $H = 1170$ điểm ảnh của màn hình. Kích thước bán kính đặc trưng của vết lỗi được tính toán dựa trên đường kính tối thiểu $D_{min} = \min(H, W)$ nhân với các tỷ lệ bán kính giới hạn trong khoảng từ $0.03$ đến $0.08$.
+
+Công cụ hỗ trợ tổng hợp năm hình thái khuyết tật chính bao gồm: (i) hình tròn, (ii) hình tam giác, (iii) hình chữ nhật, (iv) đường thẳng ngang và (v) đường thẳng dọc. Mức độ nghiêm trọng của khuyết tật được phân thành bốn cấp độ thông qua hệ số tỷ lệ cường độ $\gamma_{level}$ bao gồm: (i) cấp độ rất thấp với $\gamma_{level} \in [0.01, 0.03]$, (ii) cấp độ thấp với $\gamma_{level} \in [0.03, 0.06]$, (iii) cấp độ trung bình với $\gamma_{level} \in [0.07, 0.11]$, và (iv) cấp độ cao với $\gamma_{level} \in [0.12, 0.20]$.
+
+Sau khi vẽ mặt nạ khuyết tật binary $\mathbf{M}$, quá trình hòa trộn ảnh được thực hiện thông qua toán tử cộng có trọng số kết hợp với bộ lọc trung vị thích nghi. Công thức~(\ref{eq:defect_blend}) thể hiện phép toán tổng hợp hình ảnh cuối cùng:
+
+\begin{equation}
+I_{final}(r, c) = \text{clip}\left( I_{bg}(r, c) + (-1)^{\mathbb{I}_{dark}} \cdot \text{MedianBlur}\left( \mathbf{M}(r, c) \cdot \bar{I}_{bg} \cdot \gamma_{level}, k_{size} \right), 0, 255 \right)
+\label{eq:defect_blend}
+\end{equation}
+
+Trong Công thức~(\ref{eq:defect_blend}), ký hiệu $\bar{I}_{bg}$ biểu thị giá trị độ sáng trung bình của ảnh nền, biến chỉ thị $\mathbb{I}_{dark} \in \{0, 1\}$ xác định tính chất lỗi tối hay lỗi sáng, và $\text{MedianBlur}(\cdot, k_{size})$ đại diện cho phép lọc mờ trung vị với kích thước cửa sổ $k_{size} = \max(3, 2 \lfloor 0.005 D_{min} \rfloor + 1)$ nhằm triệt tiêu các góc cạnh sắc nhọn nhân tạo, giúp hình thái vết lỗi tiệm cận với khuyết tật vật lý tự nhiên \cite{opencv2020manual}.
+
+Mã nguồn thực thi quá trình sinh dữ liệu ảnh thích nghi được cài đặt với thư viện xử lý ảnh OpenCV được thể hiện chi tiết trong Thuật toán~\ref{alg:adaptive_generator}.
+
+\bigskip
+\noindent\hrule height 0.8pt
+\vspace{2pt}
+\captionsetup{justification=raggedright, singlelinecheck=false}
+\captionof{algorithm}{Thuật toán sinh ảnh khuyết tật thích nghi.}
+\label{alg:adaptive_generator}
+\vspace{-6pt}
+\noindent\hrule
+\vspace{4pt}
+
+\begin{algorithmic}[1]
+
+\Require
+Ảnh đầu vào $I$, phân phối chuẩn $\mathcal{N}(\mu,\sigma^2)$,
+loại khuyết tật $T$, mức độ $L$, trạng thái lỗi sáng $B$
+
+\Ensure
+Ảnh đầu ra $I_{\mathrm{final}}$
+
+\State Khởi tạo ma trận điểm ảnh $P$ kích thước $H \times W$
+
+\State
+$B_{\min} \gets \max(0,\mu-4\sigma)$
+
+\State
+$B_{\max} \gets \min(255,\mu+3\sigma)$
+
+\For{$r \gets 0$ \textbf{to} $H-1$}
+    \For{$c \gets 0$ \textbf{to} $W-1$}
+        \State
+        $s \gets \mathrm{NormalRandom}(\mu,\sigma)$
+        
+        \State
+        $u \gets \mathrm{UniformRandom}(0,1)$
+        
+        \State
+        $d \gets B_{\min}+u(B_{\max}-B_{\min})$
+        
+        \State
+        $P[r,c] \gets
+        \mathrm{Clip}(0.8s+0.2d,0,255)$
+    \EndFor
+\EndFor
+
+\State
+$I_{\mathrm{bg}} \gets \mathrm{CreateImage}(P)$
+
+\If{$I$ chứa khuyết tật}
+    \State
+    $(x_d,y_d) \gets \mathrm{CalculateBoundedPoint}()$
+    
+    \State
+    $\rho \gets \mathrm{GetScaleRatio}(L)$
+    
+    \State
+    $A \gets \mathrm{Mean}(I_{\mathrm{bg}})\times\rho$
+    
+    \State
+    $M \gets \mathrm{DrawDefectMask}(T,x_d,y_d,A)$
+    
+    \State
+    $k \gets \mathrm{GetAdaptiveKernelSize}()$
+    
+    \State
+    $M \gets \mathrm{MedianBlur}(M,k)$
+    
+    \If{$B = \mathrm{TRUE}$}
+        \State $w \gets 1$
+    \Else
+        \State $w \gets -1$
+    \EndIf
+    
+    \State
+    $I_{\mathrm{final}}
+    \gets \mathrm{Clip}(I_{\mathrm{bg}}+wM,0,255)$
+\Else
+    \State
+    $I_{\mathrm{final}} \gets I_{\mathrm{bg}}$
+\EndIf
+
+\State \Return $I_{\mathrm{final}}$
+
+\end{algorithmic}
+\vspace{2pt}
+\noindent\hrule
+\bigskip
+
+Thuật toán~\ref{alg:adaptive_generator} thể hiện sự tương quan trực tiếp với các mô hình toán học đã được thiết lập. Quá trình quét điểm ảnh hai chiều tạo ra cấu trúc nền tuân theo Công thức~(\ref{eq:bg_synthesis}), trong khi các hàm tính toán trọng số cường độ và lọc mờ trung vị thực hiện chính xác các phép toán được mô tả trong Công thức~(\ref{eq:defect_blend}). Việc tích hợp dịch vụ sinh ảnh tự động này cho phép hệ thống chủ động tạo ra hàng chục nghìn mẫu kiểm thử với các kịch bản trôi dạt khái niệm phức tạp, tạo tiền đề vững chắc cho việc đánh giá độ bền vững của thuật toán EAGNG trong các chương tiếp theo.

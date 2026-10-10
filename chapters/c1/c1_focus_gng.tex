@@ -1,0 +1,50 @@
+\section{GNG trong kiểm tra màn hình điện thoại}
+
+\subsection{Tổng quan về GNG}
+
+Thuật toán mạng khí nơ-ron tăng trưởng (Growing Neural Gas - GNG) đại diện cho mô hình học không giám sát có khả năng tự thích ứng cấu trúc đồ thị không gian dựa trên phân phối dữ liệu đầu vào \cite{fritzke1995growing}. Khác với các thuật toán phân cụm cố định số lượng trung tâm, mô hình khởi đầu với một số lượng nút tối thiểu và tự động bổ sung các nút mới trong tiến trình huấn luyện nhằm tối ưu hóa độ bao phủ không gian đặc trưng. Cấu trúc mạng bao gồm tập hợp các nút mang vectơ trọng số và tập hợp các cạnh nối thiết lập mối quan hệ lân cận giữa các nút.
+
+Nguyên lý vận hành của mạng dựa trên việc xác định hai nút có khoảng cách nhỏ nhất so với véc-tơ dữ liệu đầu vào trong không gian đặc trưng. Nút gần nhất được xác định là nút chiến thắng thứ nhất, trong khi nút gần thứ hai được xác định là nút chiến thắng thứ hai. Mô hình thực hiện điều chỉnh véc-tơ trọng số của nút chiến thắng thứ nhất cùng các nút lân cận kết nối trực tiếp về phía dữ liệu mới. Đồng thời, độ tuổi của cạnh nối giữa hai nút chiến thắng được khởi tạo lại về giá trị không, trong khi độ tuổi của các cạnh lân cận khác bị tăng lên một đơn vị. Các cạnh vượt quá ngưỡng tuổi quy định sẽ bị xóa khỏi hệ thống, dẫn đến việc loại bỏ các nút không còn kết nối.
+
+Cơ chế tăng trưởng cấu trúc đồ thị được điều phối thông qua tiến trình tích lũy sai số tại các nút chiến thắng. Sau một số bước thời gian cố định, hệ thống xác định nút có tổng sai số tích lũy lớn nhất để tiến hành chèn nút mới vào khoảng giữa nút đó và nút lân cận có sai số cao nhất. Tiến trình này giúp mạng nâng cao độ phân giải biểu diễn tại các vùng không gian có mật độ dữ liệu phức tạp. Sai số của các nút liên quan sau đó được giảm theo một hệ số quy định để duy trì tính cân bằng cho toàn hệ thống.
+
+\subsection{Ứng dụng và các nhược điểm của GNG}
+
+Mô hình Mmạng khí nơ-ron tăng trưởng được áp dụng rộng rãi trong các bài toán phân nhóm không gian, nhận dạng mẫu và nén dữ liệu phi tuyến \cite{martinetz1993neural, fritzke1995growing}. Trong lĩnh vực xử lý ảnh và kiểm tra ngoại quan công nghiệp, thuật toán cung cấp giải pháp dựng bản đồ đặc trưng tự động mà không đòi hỏi giả định ban đầu về phân phối xác suất của dữ liệu. Khả năng tự do điều chỉnh số lượng nút giúp mô hình biểu diễn hiệu quả các không gian dữ liệu có hình thái phức tạp.
+
+Mặc dù sở hữu khả năng thích ứng cấu trúc, mô hình truyền thống tồn tại bốn hạn chế kỹ thuật cốt lõi khi vận hành trong môi trường công nghiệp thực tế. Thứ nhất, thuật toán nhạy cảm với nhiễu dữ liệu dẫn đến việc chèn nút không cần thiết tại các vùng không gian có mật độ dữ liệu thưa thớt. Thứ hai, việc tích lũy sai số liên tục không tính đến thời gian tồn tại của nút gây ra sự bùng nổ số lượng nút tại vùng dữ liệu có mật độ cao, làm gia tăng chi phí tính toán của hệ thống. Thứ ba, tốc độ học cố định làm giảm tính ổn định của mạng ở giai đoạn sau của quá trình huấn luyện trực tuyến, gây ra hiện tượng dao động trọng số xung quanh điểm cân bằng. Thứ tư, thuật toán thiếu cơ chế đánh giá sự chồng lấp hình học giữa các cụm độc lập, dẫn đến hiện tượng kết nối sai cạnh giữa các nhóm dữ liệu riêng biệt.
+
+\subsection{GNG đối với bài toán kiểm tra hình ảnh lỗi trên màn hình điện thoại}
+
+Đặc thụ của bài toán kiểm tra ngoại quan màn hình điện thoại đòi hỏi mô hình học không giám sát phải có khả năng xử lý dòng dữ liệu biến động liên tục và hạn chế ảnh hưởng của nhiễu tín hiệu quang học. Các dạng khuyết tật bề mặt như đốm tròn mờ, điểm chết hoặc bọt khí có kích thước và mật độ phân bố đa dạng trên tấm nền hiển thị. Khi áp dụng mô hình truyền thống vào bài toán này, sự xuất hiện của nhiễu ảnh công nghiệp khiến cấu trúc đồ thị bị biến dạng, gây ra tình trạng gom cụm sai lệch giữa các dạng lỗi khác nhau.
+
+Để giải quyết các hạn chế nêu trên, luận văn định hướng ứng dụng thuật toán Mạng khí Nơ-ron Tăng trưởng Tích lũy Bằng chứng trong pha phân cụm lỗi trực tuyến. Phương pháp cải tiến tích hợp bốn cơ chế kỹ thuật bao gồm (i) điều chỉnh tốc độ học và hệ số giảm sai số theo độ tuổi của nút, (ii) chèn nút muộn dựa trên vùng đệm bằng chứng kết hợp huấn luyện cục bộ, (iii) kiểm soát sự phát triển hình thái dựa trên mật độ nút không gian, và (iv) kiểm tra sự chồng lấp hộp giới hạn giữa các cụm để gộp vết. Các cải tiến này giúp mô hình duy trì độ ổn định cấu trúc đồ thị và nâng cao độ chính xác phân loại khi xử lý dòng dữ liệu hình ảnh lỗi.
+
+Tiến trình xử lý dữ liệu và phát triển cấu trúc mô hình cải tiến được mô tả cụ thể trong Hình \ref{fig:eagng_process}. Khối tiếp nhận véc-tơ đặc trưng đưa dữ liệu đầu vào vào vùng đệm bằng chứng để tích lũy thông tin thống kê trước khi quyết định thay đổi cấu trúc đồ thị. Tiến trình kiểm tra mật độ không gian và kiểm tra chồng lấp hộp giới hạn đảm bảo các nút mới chỉ được tạo ra tại vùng dữ liệu có đủ mật độ, đồng thời ngăn chặn sự hợp nhất sai lệch giữa các cụm lỗi độc lập.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[node distance=1.6cm, auto, >=stealth,
+    block/.style={rectangle, draw, fill=white, text width=3.4cm, text centered, minimum height=1.1cm, font=\normalsize},
+    process/.style={rectangle, draw, fill=white, text width=3.4cm, text centered, minimum height=1.1cm, font=\normalsize},
+    decision/.style={rectangle, draw, fill=white, text width=3.4cm, text centered, minimum height=1.1cm, font=\normalsize},
+    line/.style={draw, ->, thick}]
+    
+    \node [block] (input) {Véc-tơ đặc trưng lỗi từ ResNet};
+    \node [process, right of=input, xshift=3.2cm] (buffer) {Vùng đệm tích lũy bằng chứng};
+    \node [decision, right of=buffer, xshift=3.2cm] (density) {Kiểm tra mật độ không gian};
+    \node [process, below of=density, yshift=-0.8cm] (overlap) {Kiểm tra chồng lấp hộp giới hạn};
+    \node [block, left of=overlap, xshift=-3.2cm] (eagng_node) {Cập nhật nút theo độ tuổi};
+    \node [block, left of=eagng_node, xshift=-3.2cm] (clustering) {Phân cụm thành phần liên thông};
+
+    \path [line] (input) -- (buffer);
+    \path [line] (buffer) -- (density);
+    \path [line] (density) -- (overlap);
+    \path [line] (overlap) -- (eagng_node);
+    \path [line] (eagng_node) -- (clustering);
+\end{tikzpicture}
+\caption{Tiến trình xử lý dữ liệu và phát triển cấu trúc mô hình EAGNG trực tuyến.}
+\label{fig:eagng_process}
+\end{figure}
+
+Sự kết hợp giữa cơ chế tích lũy bằng chứng và kiểm soát mật độ giúp giảm thiểu việc khởi tạo các nút dư thừa do nhiễu môi trường sản xuất. Đồng thời, việc gộp các vết lỗi dựa trên hộp giới hạn hình học cho phép hệ thống nhận diện chính xác hình thái của từng chủng loại khuyết tật trên bề mặt màn hình điện thoại.

@@ -1,0 +1,195 @@
+\section{Thuật toán phân cụm lỗi trực tuyến EAGNG}
+\label{sec:thuat_toan_eagng}
+
+Thuật toán Mạng khí Nơ-ron tăng trưởng tích lũy bằng chứng được đề xuất nhằm giải quyết bài toán phân cụm khuyết tật thích nghi trực tuyến từ dòng đặc trưng trích xuất từ mạng ResNet bốn kênh ở Pha 2. Mạng khí Nơ-ron tăng trưởng truyền thống của Fritzke \cite{fritzke1995growing} gặp nhiều hạn chế khi vận hành trong môi trường công nghiệp liên tục do hiện tượng nhiễu dữ liệu, sự xuất hiện của các dạng lỗi mới và nguy cơ bùng nổ số lượng nút không kiểm soát. Thuật toán cải tiến tích hợp bốn cơ chế cốt lõi để duy trì tính ổn định tô-pô, kiểm soát mật độ nút và phân tách chính xác các hình thái khuyết tật phức tạp.
+
+\subsection{Cơ chế suy giảm tốc độ học và tích lũy lỗi theo tuổi nút}
+\label{subsec:node_aging_dynamic}
+
+Cơ chế suy giảm tốc độ học và tích lũy lỗi theo tuổi nút điều chỉnh động năng lực học của từng nút dựa trên thời gian tồn tại của nút đó trong đồ thị. Các nút mới được tạo ra có mức độ linh hoạt cao để nhanh chóng thích nghi với vùng không gian đặc trưng mới, trong khi các nút có tuổi đời cao đạt trạng thái ổn định nhằm bảo tồn tri thức cấu trúc đã học \cite{martinetz1993neural}.
+
+Tốc độ học của nút chiến thắng thứ nhất $s_1$ và các nút lân cận $n$ thuộc tập hợp $N_{s_1}$ giảm dần theo độ tuổi của nút $a_{s_1}$ được tính toán theo Công thức \ref{eq:aging_learning_rate_winner} và Công thức \ref{eq:aging_learning_rate_neighbor}:
+\begin{equation}
+\label{eq:aging_learning_rate_winner}
+\epsilon_b(a_{s_1}) = \frac{\epsilon_{b0}}{1 + \alpha_a \cdot a_{s_1}}
+\end{equation}
+\begin{equation}
+\label{eq:aging_learning_rate_neighbor}
+\epsilon_n(a_n) = \frac{\epsilon_{n0}}{1 + \alpha_a \cdot a_n}
+\end{equation}
+trong đó $\epsilon_{b0}$ và $\epsilon_{n0}$ lần lượt đại diện cho tốc độ học khởi tạo của nút chiến thắng và nút lân cận, $a_{s_1}$ và $a_n$ tương ứng là tuổi hiện tại của nút $s_1$ và nút $n$, còn $\alpha_a$ là hệ số suy giảm tuổi nút.
+
+Đồng thời, tốc độ tích lũy lỗi tại nút chiến thắng $s_1$ cũng được điều chỉnh giảm theo tuổi nhằm tránh hiện tượng phát triển nút mới bất hợp lý tại các vùng dữ liệu đã ổn định. Mức tăng lỗi tích lũy $\Delta A_{s_1}$ được xác định theo Công thức \ref{eq:error_aging_accum}:
+\begin{equation}
+\label{eq:error_aging_accum}
+\Delta A_{s_1} = \left( 1 - \frac{a_{s_1}}{a_{s_1} + a_{max}} \right) \cdot \| f_{defect} - w_{s_1} \|_2^2
+\end{equation}
+trong đó $f_{defect}$ là vectơ đặc trưng lỗi đầu vào từ mạng ResNet, $w_{s_1}$ biểu diễn vectơ trọng số của nút $s_1$, $a_{max}$ là hằng số tuổi chuẩn hóa tối đa, và $\|\cdot\|_2$ thể hiện chuẩn Euclid hai. Cơ chế này đảm bảo những nút lâu năm không liên tục tích lũy lỗi do nhiễu ngẫu nhiên, giúp cấu trúc đồ thị duy trì sự ổn định qua thời gian.
+
+\subsection{Kiểm tra chồng lấp Bounding Box kiểm soát liên kết cạnh}
+\label{subsec:bounding_box_overlap}
+
+Cơ chế kiểm tra chồng lấp hộp giới hạn ngăn chặn việc kết nối nhầm lẫn giữa hai cụm khuyết tật riêng biệt nằm gần nhau trong không gian đặc trưng. Phép tạo cạnh nối truyền thống chỉ dựa trên khoảng cách giữa hai nút chiến thắng có thể vô tình gộp hai loại lỗi có bản chất hình thái khác nhau thành một cụm duy nhất.
+
+Đối với mỗi cụm nút $C_k$ trên đồ thị, một hộp giới hạn đa chiều $BB(C_k)$ được xác định bởi giá trị cực tiểu và cực đại của tọa độ các nút thuộc cụm đó. Tỷ lệ chồng lấp $O(C_a, C_b)$ giữa hai hộp giới hạn của cụm $C_a$ và cụm $C_b$ được tính toán theo Công thức \ref{eq:overlap_ratio2}:
+\begin{equation}
+\label{eq:overlap_ratio2}
+O(C_a, C_b) = \frac{\text{Thể tích}(BB(C_a) \cap BB(C_b))}{\min \left( \text{Thể tích}(BB(C_a)), \text{Thể tích}(BB(C_b)) \right)}
+\end{equation}
+trong đó $\text{Thể tích}(\cdot)$ đại diện cho thể tích của hộp giới hạn trong không gian đặc trưng, và phần tử số biểu diễn thể tích phần giao nhau giữa hai hộp giới hạn.
+
+Điều kiện thiết lập cạnh nối giữa nút $u \in C_a$ và nút $v \in C_b$ được quy định theo Công thức \ref{eq:edge_creation_rule}:
+\begin{equation}
+\label{eq:edge_creation_rule}
+\text{Cho phép tạo cạnh }(u, v) \iff O(C_a, C_b) \ge \theta_{overlap}
+\end{equation}
+trong đó $\theta_{overlap}$ là ngưỡng chồng lấp tối thiểu bắt buộc. Nếu tỷ lệ chồng lấp $O(C_a, C_b)$ nhỏ hơn ngưỡng $\theta_{overlap}$, phép kết nối cạnh giữa hai nút bị loại bỏ, bảo toàn sự phân tách độc lập giữa hai lớp khuyết tật riêng biệt.
+
+
+\subsection{Cơ chế trì hoãn chèn dựa trên bằng chứng và học cục bộ}
+\label{subsec:deferred_insertion}
+
+Cơ chế trì hoãn chèn dựa trên bằng chứng và học cục bộ giải quyết vấn đề chèn nút nhiễu khi dòng dữ liệu xuất hiện các điểm ngoại lệ đơn lẻ. Thay vì lập tức tạo nút mới khi gặp một mẫu dữ liệu nằm xa các nút hiện có, thuật toán lưu giữ mẫu dữ liệu đó vào một bộ đệm tạm thời để thu thập đủ bằng chứng mật độ trước khi tái cấu trúc tô-pô cục bộ \cite{penev1998local}.
+
+Khi khoảng cách cực tiểu từ một vectơ đặc trưng mới $f_{defect}$ đến nút gần nhất vượt quá ngưỡng phân tách $T_{p2}$, điểm dữ liệu này được đưa vào vùng đệm lưu trữ tạm thời $B_r$ tương ứng với vùng không gian $r$. Ngưỡng quyết định việc khởi tạo quá trình huấn luyện cục bộ dựa trên số lượng bằng chứng tích lũy được xác định theo Công thức \ref{eq:buffer_threshold}:
+\begin{equation}
+\label{eq:buffer_threshold}
+|B_r| \ge N_{evidence}
+\end{equation}
+trong đó $|B_r|$ đại diện cho số lượng mẫu đặc trưng hiện có trong bộ đệm $B_r$, và $N_{evidence}$ là hằng số ngưỡng bằng chứng tối thiểu bắt buộc để xác nhận một cụm lỗi mới.
+
+Khi điều kiện trong Công thức \ref{eq:buffer_threshold} được thỏa mãn, thuật toán tiến hành quá trình huấn luyện cục bộ trên tập hợp các mẫu dữ liệu thuộc $B_r$. Trọng số của nút mới $w_{new}$ được khởi tạo tại tâm của tập bằng chứng $B_r$ theo Công thức \ref{eq:local_mini_train}:
+\begin{equation}
+\label{eq:local_mini_train}
+w_{new} = \frac{1}{|B_r|} \sum_{x_j \in B_r} x_j
+\end{equation}
+trong đó $x_j$ đại diện cho vectơ đặc trưng thứ $j$ nằm trong bộ đệm $B_r$. Sau khi nút mới được khởi tạo và kết nối với các nút lân cận thích hợp, bộ đệm $B_r$ được xóa rỗng để sẵn sàng thu thập bằng chứng cho các chu kỳ tiếp theo v.v...
+
+\subsection{Phát triển cấu trúc nhạy mật độ}
+\label{subsec:density_aware_growth}
+
+Cơ chế phát triển cấu trúc nhạy mật độ ngăn ngừa sự gia tăng số lượng nút quá mức tại các vùng đặc trưng có mật độ cao nhưng độ biến động nhỏ. Các thuật toán khí tăng trưởng truyền thống thường chèn nút mới tại vị trí có lỗi tích lũy lớn nhất mà không kiểm tra mật độ phân bố xung quanh, dẫn đến hiện tượng dư thừa nút và lãng phí bộ nhớ tính toán.
+
+Mật độ nút cục bộ $\rho_q$ tại nút có lỗi tích lũy cao nhất $q$ được tính toán dựa trên khoảng cách trung bình đến các nút lân cận trực tiếp theo Công thức \ref{eq:local_density}:
+\begin{equation}
+\label{eq:local_density}
+\rho_q = \frac{|N_q|}{\sum_{n \in N_q} \| w_q - w_n \|_2 + \epsilon_0}
+\end{equation}
+trong đó $N_q$ là tập hợp các nút lân cận trực tiếp có liên kết cạnh với nút $q$, $|N_q|$ đại diện cho số lượng nút lân cận, $w_q$ và $w_n$ lần lượt là vectơ trọng số của nút $q$ và nút $n$, còn $\epsilon_0$ là hằng số dương cực tiểu ngăn ngừa lỗi chia cho số không.
+
+Quyết định chèn nút mới giữa nút $q$ và nút lân cận $f$ có lỗi lớn nhất được kiểm soát bởi điều kiện mật độ theo Công thức \ref{eq:density_check}:
+\begin{equation}
+\label{eq:density_check}
+\text{Phép chèn được thực hiện khi } \rho_q < \rho_{thresh}
+\end{equation}
+trong đó $\rho_{thresh}$ là ngưỡng mật độ tối đa cho phép chèn nút. Nếu $\rho_q \ge \rho_{thresh}$, thuật toán bỏ qua việc chèn nút mới và thay vào đó thực hiện phân bổ lại lỗi tích lũy của nút $q$ cho các nút lân cận nhằm ổn định mạng mà không gia tăng quy mô đồ thị.
+
+
+\subsection{Phân loại cụm lỗi bằng thuật toán Connected-Component trên đồ thị EAGNG}
+\label{subsec:connected_component_clustering}
+
+Sau khi cấu trúc đồ thị EAGNG được cập nhật trực tuyến, việc xác định các lớp khuyết tật dựa trên thuật toán tìm thành phần liên kết trên đồ thị vô hướng $G = (V, E)$. Mỗi thành phần liên kết cô lập đại diện cho một cụm khuyết tật có hình thái đặc trưng riêng biệt trên bề mặt màn hình điện thoại \cite{tarjan1972depth}.
+
+Tập hợp các cụm khuyết tật $\mathcal{C} = \{C_1, C_2, \dots, C_K\}$ được trích xuất sao cho thỏa mãn hai điều kiện tô-pô cơ bản theo Công thức \ref{eq:cc_conditions}:
+\begin{equation}
+\label{eq:cc_conditions}
+\bigcup_{i=1}^{K} C_i = V \quad \text{và} \quad C_i \cap C_j = \emptyset \quad \forall i \neq j
+\end{equation}
+trong đó $V$ đại diện cho tập hợp tất cả các nút trong đồ thị EAGNG, $E$ biểu diễn tập hợp các cạnh nối giữa các nút, và $K$ là tổng số cụm khuyết tật tự động phát hiện được tại thời điểm hiện tại.
+
+Phương pháp phân cụm dựa trên đồ thị này loại bỏ yêu cầu phải khai báo trước số lượng cụm mục tiêu. Khi xuất hiện dạng khuyết tật hoàn toàn mới trên dây chuyền sản xuất, thuật toán EAGNG tự động hình thành các nút và thành phần liên kết mới, giúp hệ thống thích ứng linh hoạt với những biến đổi thực tế.
+
+\subsection{Thuật toán tổng thể và Mã giả EAGNG}
+\label{subsec:magia_eagng}
+
+Thuật toán EAGNG tổng thể hợp nhất bốn cơ chế cải tiến vào một quy trình xử lý luồng dữ liệu liên tục. Quá trình vận hành của thuật toán được trình bày chi tiết trong Thuật toán \ref{alg:eagng_online}.
+
+\bigskip
+\noindent\hrule height 0.8pt
+\vspace{2pt}
+\captionsetup{justification=raggedright, singlelinecheck=false}
+\captionof{algorithm}{Thuật toán phân cụm lỗi trực tuyến EAGNG}
+\label{alg:eagng_online}
+\vspace{-6pt}
+\noindent\hrule
+\vspace{4pt}
+
+\begin{algorithmic}[1]
+
+\Require Dòng đặc trưng $f_{defect}$, tập nút $V$, tập cạnh $E$, các tham số $\epsilon_{b0}, \epsilon_{n0}, N_{evidence}, \rho_{thresh}, \theta_{overlap}$.
+\Ensure Tập các cụm khuyết tật $\mathcal{C} = \{C_1, C_2, \dots, C_K\}$.
+
+\While{có mẫu dữ liệu đầu vào $f_{defect}$}
+
+    \State Tìm hai nút $s_1, s_2 \in V$ gần $f_{defect}$ nhất theo chuẩn Euclid;
+
+    \If{$\| f_{defect} - w_{s_1} \|_2 > T_{p2}$}
+
+        \State Thêm $f_{defect}$ vào bộ đệm $B_r$;
+
+        \If{$|B_r| \ge N_{evidence}$}
+            \State Khởi tạo nút mới $w_{new}$ theo Công thức \ref{eq:local_mini_train};
+            \State $V \leftarrow V \cup \{new\}$; Xóa bộ đệm $B_r$;
+        \EndIf
+
+    \Else
+
+        \State Cập nhật tuổi tất cả các cạnh nối với $s_1$:
+        $a_{(s_1,n)} \leftarrow a_{(s_1,n)} + 1$;
+
+        \State Tính tốc độ học $\epsilon_b(a_{s_1})$ và $\epsilon_n(a_n)$
+        theo Công thức \ref{eq:aging_learning_rate_winner}
+        và \ref{eq:aging_learning_rate_neighbor};
+
+        \State $w_{s_1} \leftarrow
+        w_{s_1} + \epsilon_b(a_{s_1})
+        (f_{defect} - w_{s_1})$;
+
+        \State $w_n \leftarrow
+        w_n + \epsilon_n(a_n)
+        (f_{defect} - w_n),
+        \quad \forall n \in N_{s_1}$;
+
+        \State Tính tích lũy lỗi $\Delta A_{s_1}$
+        theo Công thức \ref{eq:error_aging_accum};
+
+        \If{chưa có cạnh $(s_1, s_2)$}
+
+            \State Kiểm tra điều kiện chồng lấp
+            $O(C_{s_1}, C_{s_2}) \ge \theta_{overlap}$
+            theo Công thức \ref{eq:edge_creation_rule};
+
+            \If{Thỏa mãn điều kiện}
+                \State $E \leftarrow E \cup \{(s_1, s_2)\}$;
+                \State Tái lập tuổi cạnh
+                $a_{(s_1,s_2)} \leftarrow 0$;
+            \EndIf
+
+        \Else
+
+            \State Tái lập tuổi cạnh
+            $a_{(s_1,s_2)} \leftarrow 0$;
+
+        \EndIf
+
+        \If{đến chu kỳ kiểm tra chèn nút và $\rho_{s_1} < \rho_{thresh}$}
+            \State Tìm nút lân cận $u \in N_{s_1}$ có lỗi lớn nhất
+            và chèn nút mới giữa $s_1$ và $u$;
+        \EndIf
+
+        \State Loại bỏ các cạnh có tuổi vượt quá $a_{max}$
+        và các nút cô lập không có liên kết;
+
+    \EndIf
+
+\EndWhile
+
+\State Áp dụng thuật toán Connected-Component trích xuất tập cụm lỗi
+$\mathcal{C}$ theo Công thức \ref{eq:cc_conditions};
+
+\Return Tập cụm khuyết tật $\mathcal{C}$.
+
+\end{algorithmic}
+\vspace{2pt}
+\noindent\hrule
+\bigskip

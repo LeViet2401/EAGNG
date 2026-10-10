@@ -1,0 +1,51 @@
+\section{Trích xuất đặc trưng chuyên biệt cho hai pha}
+\label{sec:trichxuat_dactrung}
+
+Quá trình trích xuất đặc trưng được thiết kế tách biệt cho hai pha xử lý nhằm đáp ứng các mục tiêu bài toán khác nhau. Pha phát hiện bất thường ngoại tuyến yêu cầu một không gian biểu diễn thu nhỏ để nén các đặc tính của bề mặt màn hình đạt chuẩn, trong khi pha phân cụm lỗi trực tuyến cần các đặc trưng phản ánh chi tiết hình thái và biên giới của khuyết tật. Sự phân tách này giúp tối ưu hóa dung lượng tính toán và nâng cao khả năng phân tách giữa các lớp lỗi phát sinh.
+
+\subsection{Mạng mã hóa tự động: Nén không gian tiềm ẩn nhận dạng mẫu chuẩn}
+\label{subsec:autoencoder}
+
+Mạng mã hóa tự động đảm nhận nhiệm vụ học cách biểu diễn thu gọn của các hình ảnh màn hình không chứa khuyết tật. Bằng cách huấn luyện mạng tái tạo lại chính dữ liệu đầu vào bốn kênh, mô hình buộc phải nén thông tin qua một bộ thắt nút để tạo ra vectơ tiềm ẩn chứa các đặc trưng tổng quát nhất của bề mặt chuẩn \cite{kingma2013autoencoding}.
+
+Quá trình mã hóa và giải mã được thực hiện qua hai phép biến đổi phi tuyến nối tiếp. Hàm mã hóa chuyển đổi dữ liệu đầu vào bốn kênh thành vectơ tiềm ẩn theo Công thức \ref{eq:encoder}:
+\begin{equation}
+\label{eq:encoder}
+z = g_\theta(I_{RGB-E})
+\end{equation}
+trong đó $I_{RGB-E}$ đại diện cho dữ liệu ảnh đầu vào bốn kênh bao gồm ba kênh màu và một kênh entropy, $g_\theta$ biểu diễn hàm mã hóa được tham số hóa bởi tập trọng số $\theta$, và $z$ là vectơ tiềm ẩn nằm trong không gian nén. Sau đó, quá trình tái tạo hình ảnh từ không gian tiềm ẩn được thực hiện qua hàm giải mã theo Công thức \ref{eq:decoder}:
+\begin{equation}
+\label{eq:decoder}
+\hat{I}_{RGB-E} = f_\phi(z)
+\end{equation}
+trong đó $f_\phi$ là hàm giải mã được tham số hóa bởi tập trọng số $\phi$, và $\hat{I}_{RGB-E}$ biểu diễn dữ liệu ảnh tái tạo bốn kênh thu được ở đầu ra.
+
+Vectơ tiềm ẩn $z$ thu được sau quá trình huấn luyện giữ vai trò là đầu vào cho mô hình Mạng khí Nơ-ron tăng trưởng ngoại tuyến ở Pha 1. Do mạng mã hóa tự động chỉ được huấn luyện trên tập dữ liệu đạt chuẩn, khả năng tái tạo của mạng đối với các vùng chứa khuyết tật sẽ kém hiệu quả, tạo ra sự sai lệch khoảng cách đáng kể và hỗ trợ cho việc phân loại bất thường ở các giai đoạn sau.
+
+\subsection{Mạng ResNet bốn kênh: Trích xuất đặc trưng hình thái lỗi}
+\label{subsec:resnet4khenh}
+
+Mạng ResNet bốn kênh được cải tiến để trích xuất các đặc trưng ngữ nghĩa và hình thái khuyết tật phục vụ cho giai đoạn phân cụm trực tuyến ở Pha 2. Khác với mạng mã hóa tự động tập trung vào việc tái tạo toàn cục, kiến trúc ResNet tận dụng các liên kết tắt nhằm bảo toàn thông tin độ dốc và trích xuất các đặc trưng ranh giới sắc nét của đốm tròn hoặc hạt bụi \cite{he2016deep}.
+
+Lớp tích phân đầu tiên của kiến trúc mạng được điều chỉnh để tiếp nhận trực tiếp dữ liệu đầu vào bốn kênh. Biến đổi đặc trưng từ ảnh bất thường sang vectơ đặc trưng hình thái được mô tả theo Công thức \ref{eq:resnet_extract}:
+\begin{equation}
+\label{eq:resnet_extract}
+f_{defect} = R_\psi(I_{RGB-E}^{anomaly})
+\end{equation}
+trong đó $I_{RGB-E}^{anomaly}$ đại diện cho dữ liệu ảnh bất thường bốn kênh được chuyển tiếp từ Pha 1, $R_\psi$ biểu diễn hàm trích xuất đặc trưng của mạng ResNet cải tiến với tập tham số $\psi$, và $f_{defect}$ là vectơ đặc trưng hình thái đầu ra được sử dụng cho thuật toán phân cụm trực tuyến.
+
+Vectơ đặc trưng $f_{defect}$ tập trung phản ánh các yếu tố cấu trúc bao gồm: (i) kích thước và diện tích của vùng khuyết tật, (ii) độ bất đồng nhất về mặt entropy tại khu vực biến dạng, và (iii) tỷ lệ hình dạng biên giới khuyết tật. Các yếu tố này tạo tiền đề cho việc phân tách chính xác các dạng lỗi có hình thái khác nhau trong không gian đặc trưng.
+
+\subsection{Hàm mất mát và Tối ưu hóa mạng trích xuất đặc trưng}
+\label{subsec:hammatmat_toiuu}
+
+Quá trình huấn luyện mạng trích xuất đặc trưng sử dụng các hàm mất mát chuyên biệt nhằm tối ưu hóa khả năng biểu diễn dữ liệu cho từng pha. Việc lựa chọn đúng hàm mục tiêu đảm bảo mô hình không bị quá khớp với dữ liệu huấn luyện và duy trì tính ổn định khi triển khai thực tế.
+
+Mạng mã hóa tự động ở Pha 1 được tối ưu hóa thông qua hàm mất mát sai số bình phương trung bình kết hợp với chỉ số độ tương đồng cấu trúc. Hàm mất mát tổng hợp của mạng mã hóa tự động được xác định theo Công thức \ref{eq:loss_ae}:
+\begin{equation}
+\label{eq:loss_ae}
+L_{AE}(\theta, \phi) = \frac{1}{M} \sum_{i=1}^{M} \| I_{RGB-E}^{(i)} - \hat{I}_{RGB-E}^{(i)} \|_2^2 + \lambda \left( 1 - \text{SSIM}(I_{RGB-E}^{(i)}, \hat{I}_{RGB-E}^{(i)}) \right)
+\end{equation}
+trong đó $M$ đại diện cho tổng số mẫu ảnh trong một lô huấn luyện, $I_{RGB-E}^{(i)}$ và $\hat{I}_{RGB-E}^{(i)}$ lần lượt biểu diễn ảnh gốc thứ $i$ và ảnh tái tạo tương ứng, $\text{SSIM}$ là chỉ số đo lường độ tương đồng cấu trúc giữa hai hình ảnh, $\lambda$ là hệ số cân bằng giữa hai thành phần mất mát, và $\|\cdot\|_2$ thể hiện chuẩn Euclid hai.
+
+Thuật toán tối ưu hóa Adam được áp dụng để cập nhật trọng số cho cả hai mạng với tốc độ học được điều chỉnh giảm dần theo thời gian huấn luyện. Quá trình tối ưu hóa kết thúc khi giá trị của hàm mất mát đạt trạng thái hội tụ và không giảm quá một ngưỡng xác định trước trong nhiều chu kỳ huấn luyện liên tiếp v.v…

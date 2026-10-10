@@ -1,0 +1,208 @@
+\begin{thebibliography}{10}
+
+\bibitem{park2023design}
+Jin-Woo Park, Soo-Yong Kim, and Dong-Hwan Lee.
+\newblock Design and evaluation of features and classifiers for oled panel
+  defect recognition in machine vision.
+\newblock {\em Journal of Manufacturing Systems}, 68:112--125, 2023.
+
+\bibitem{nguyen2017novel}
+Van-Thiet Nguyen and Young-Chul Kim.
+\newblock A novel algorithm for defect extraction and classification of mobile
+  phone screen based on machine vision.
+\newblock {\em The International Journal of Advanced Manufacturing Technology},
+  92(5):1805--1818, 2017.
+
+\bibitem{li2020deep}
+Chen Li, Xi~Zhang, and Peng Zhao.
+\newblock Deep learning for classification of repairable defects in display
+  panels using multi-modal data.
+\newblock {\em IEEE Transactions on Industrial Informatics}, 16(8):5120--5131,
+  2020.
+
+\bibitem{yolo2023mobile}
+Wei Zhang, Ming Liu, and Hao Sun.
+\newblock Mobile phone screen defect detection based on improved yolov8n
+  network.
+\newblock {\em Computers and Electrical Engineering}, 108:108670, 2023.
+
+\bibitem{liu2024effnet}
+Yang Liu, Jian Wang, and Lei Chen.
+\newblock Effnet: Element-wise feature fusion network for defect detection of
+  display panels.
+\newblock {\em IEEE Transactions on Instrumentation and Measurement}, 73:1--12,
+  2024.
+
+\bibitem{roth2022smartphone}
+Alexander Roth, Stefan Mueller, and Karl Schmidt.
+\newblock Smartphone screen surface defect detection using dynamic large
+  separable kernel attention and multi-scale feature bi-directional path
+  aggregation network.
+\newblock {\em Pattern Recognition}, 124:108450, 2022.
+
+\bibitem{fritzke1995growing}
+Bernd Fritzke.
+\newblock A growing neural gas network learns topologies.
+\newblock In {\em Advances in Neural Information Processing Systems}, volume~7,
+  pages 625--632. MIT Press, 1995.
+
+\bibitem{goodfellow2016deep}
+Ian Goodfellow, Yoshua Bengio, and Aaron Courville.
+\newblock {\em Deep Learning}.
+\newblock MIT Press, 2016.
+
+\bibitem{shannon1948mathematical}
+Claude~E. Shannon.
+\newblock A mathematical theory of communication.
+\newblock {\em The Bell System Technical Journal}, 27(3):379--423, 1948.
+
+\bibitem{he2016deep}
+Kaiming He, Xiangyu Zhang, Shaoqing Ren, and Jian Sun.
+\newblock Deep residual learning for image recognition.
+\newblock In {\em IEEE Conference on Computer Vision and Pattern Recognition
+  (CVPR)}, pages 770--778, 2016.
+
+\bibitem{martinetz1993neural}
+Thomas Martinetz and Klaus Schulten.
+\newblock A neural-gas network learns topologies.
+\newblock {\em Artificial Neural Networks}, pages 397--402, 1993.
+
+\bibitem{gonzalez2018digital}
+Rafael~C. Gonzalez and Richard~E. Woods.
+\newblock {\em Digital Image Processing}.
+\newblock Pearson, 4th edition, 2018.
+
+\bibitem{haralick1973textural}
+Robert~M Haralick, K~Sam Shanmugam, and Its'~Hak Dinstein.
+\newblock Textural features for image classification.
+\newblock {\em IEEE Transactions on Systems, Man, and Cybernetics}, pages
+  610--621, 1973.
+
+\bibitem{lecanu2015deep}
+Yann LeCun, Yoshua Bengio, and Geoffrey Hinton.
+\newblock Deep learning.
+\newblock {\em Nature}, 521(7553):436--444, 2015.
+
+\bibitem{hinton2006reducing}
+Geoffrey~E Hinton and Ruslan~R Salakhutdinov.
+\newblock Reducing the dimensionality of data with neural networks.
+\newblock {\em Science}, 313(5786):504--507, 2006.
+
+\bibitem{szegedy2016rethinking}
+Christian Szegedy, Vincent Vanhoucke, Sergey Ioffe, Jon Shlens, and Zbigniew
+  Wojna.
+\newblock Rethinking the inception architecture for computer vision.
+\newblock In {\em Proceedings of the IEEE conference on computer vision and
+  pattern recognition}, pages 2818--2826, 2016.
+
+\bibitem{kohonen1982self}
+Teuvo Kohonen.
+\newblock Self-organized formation of topologically correct feature maps.
+\newblock {\em Biological Cybernetics}, 43(1):59--69, 1982.
+
+\bibitem{martinetz1991neural}
+Thomas Martinetz and Klaus Schulten.
+\newblock A "neural-gas" network learns topologies.
+\newblock {\em Artificial Neural Networks}, 1:397--402, 1991.
+
+\bibitem{grossberg1987competitive}
+Stephen Grossberg.
+\newblock Competitive learning: From perceptron to adaptive resonance.
+\newblock {\em Cognitive Science}, 11(1):23--63, 1987.
+
+\bibitem{silva2006boundary}
+Leoconil Silva and Fernando Marques.
+\newblock Boundary detection using growing neural gas.
+\newblock {\em IEEE Transactions on Neural Networks}, 17(4):1080--1085, 2006.
+
+\bibitem{he2008graph}
+Xiang He and Yong Ma.
+\newblock Graph-based topological learning for pattern clustering.
+\newblock {\em Pattern Recognition Letters}, 29(10):1551--1559, 2008.
+
+\bibitem{hawkins1980identification}
+Douglas~M. Hawkins.
+\newblock {\em Identification of Outliers}.
+\newblock Springer, 1980.
+
+\bibitem{pukelsheim1994three}
+Friedrich Pukelsheim.
+\newblock The three-sigma rule.
+\newblock {\em The American Statistician}, 48(2):88--91, 1994.
+
+\bibitem{hopcroft1973algorithm}
+John Hopcroft and Robert Tarjan.
+\newblock Algorithm 447: efficient algorithms for graph manipulation.
+\newblock {\em Communications of the ACM}, 16(6):372--378, 1973.
+
+\bibitem{french1999catastrophic}
+Robert~M. French.
+\newblock Catastrophic forgetting in connectionist networks.
+\newblock {\em Trends in Cognitive Sciences}, 3(4):128--135, 1999.
+
+\bibitem{kirkpatrick2017overcoming}
+James Kirkpatrick, Razvan Pascanu, Neil Rabinowitz, Joel Veness, Guillaume
+  Desjardins, Andrei~A Rusu, Kieran Milan, John Quan, Tiago Ramalho, Agnieszka
+  Grabska-Barwinska, et~al.
+\newblock Overcoming catastrophic forgetting in neural networks.
+\newblock {\em Proceedings of the National Academy of Sciences},
+  114(13):3521--3526, 2017.
+
+\bibitem{lopez2017gradient}
+David Lopez-Paz and Marc'Aurelio Ranzato.
+\newblock Gradient episodic memory for continual learning.
+\newblock In {\em Advances in Neural Information Processing Systems},
+  volume~30, pages 6467--6476, 2017.
+
+\bibitem{kingma2013autoencoding}
+Diederik~P Kingma and Max Welling.
+\newblock Auto-encoding variational bayes.
+\newblock In {\em International Conference on Learning Representations (ICLR)},
+  2014.
+
+\bibitem{nist2012ehandbook}
+{NIST/SEMATECH}.
+\newblock {\em e-Handbook of Statistical Methods}.
+\newblock National Institute of Standards and Technology, 2012.
+
+\bibitem{penev1998local}
+Penio~S Penev and Joseph~J Atick.
+\newblock Local feature analysis: A general statistical theory for object
+  representation.
+\newblock In {\em Network: Computation in Neural Systems}, volume~7, pages
+  477--500, 1998.
+
+\bibitem{tarjan1972depth}
+Robert Tarjan.
+\newblock Depth-first search and linear graph algorithms.
+\newblock {\em SIAM Journal on Computing}, 1(2):146--160, 1972.
+
+\bibitem{opencv2020manual}
+{OpenCV team}.
+\newblock {\em OpenCV Reference Manual}, 2020.
+
+\bibitem{hubert1985comparing}
+Lawrence Hubert and Phipps Arabie.
+\newblock Comparing partitions.
+\newblock {\em Journal of Classification}, 2(1):193--218, 1985.
+
+\bibitem{strehl2002cluster}
+Alexander Strehl and Joydeep Ghosh.
+\newblock Cluster ensembles---a knowledge reuse framework for combining
+  multiple partitions.
+\newblock {\em Journal of Machine Learning Research}, 3:583--617, 2002.
+
+\bibitem{furao2006soinn}
+Shen Furao and Osamu Hasegawa.
+\newblock An incremental network for on-line unsupervised classification and
+  topology learning.
+\newblock {\em Neural Networks}, 19(1):90--103, 2006.
+
+\bibitem{macqueen1967methods}
+James MacQueen.
+\newblock Some methods for classification and analysis of multivariate
+  observations.
+\newblock In {\em Proceedings of the Fifth Berkeley Symposium on Mathematical
+  Statistics and Probability}, volume~1, pages 281--297, 1967.
+
+\end{thebibliography}

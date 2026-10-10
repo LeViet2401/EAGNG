@@ -1,0 +1,38 @@
+\section{Mô tả bài toán}
+
+Kiểm tra và phân loại lỗi bề mặt màn hình điện thoại là công đoạn then chốt trong quy trình kiểm soát chất lượng sản phẩm tại các dây chuyền lắp ráp công nghiệp \cite{park2023design}. Cấu trúc phức hợp gồm nhiều lớp kính, tấm nền hiển thị và cảm ứng khiến các khuyết tật xuất hiện với đặc tính quang học đa dạng như vết trầy xước, hạt bụi, điểm chết pixel, vết nứt v.v… Hệ thống kiểm tra quang học tự động hỗ trợ phát hiện kịp thời các khuyết tật phát sinh, góp phần giảm chi phí nhân công và duy trì hiệu suất vận hành toàn hệ thống.
+
+Các phương pháp kiểm tra lỗi truyền thống chủ yếu dựa trên kỹ thuật học máy có giám sát và các mạng nơ-ron tích chập \cite{nguyen2017novel, li2020deep, yolo2023mobile}. Kỹ thuật học máy có giám sát đòi hỏi tập dữ liệu gán nhãn thủ công quy mô lớn đối với từng loại lỗi cố định. Trong thực tế sản xuất, các hình thái lỗi mới phát sinh liên tục do sự thay đổi của linh kiện đầu vào hoặc sự cố kỹ thuật của thiết bị. Do đó, các mô hình học giám sát có cấu trúc cố định thường gặp khó khăn trong việc nhận diện các dạng khuyết tật chưa từng xuất hiện trong tập dữ liệu huấn luyện.
+
+Xu hướng ứng dụng các mô hình học không giám sát trong phát hiện bất thường giúp giảm sự phụ thuộc vào dữ liệu lỗi được gán nhãn thủ công \cite{liu2024effnet, roth2022smartphone}. Các phương pháp này học tập các đặc trưng không gian từ tập sản phẩm đạt chuẩn để xác định ngưỡng sai biệt cho các mẫu khuyết tật. Tuy nhiên, phần lớn các tiếp cận không giám sát hiện hành chưa tích hợp cơ chế phân loại tự động và tổ chức dữ liệu cho các loại lỗi mới xuất hiện theo thời gian thực.
+
+Nghiên cứu này tập trung giải quyết bài toán phát hiện bất thường và phân loại các dạng lỗi bề mặt màn hình điện thoại trong môi trường dòng dữ liệu động. Hệ thống đặt ra ba yêu cầu kỹ thuật bao gồm (i) phát hiện chính xác các vùng ảnh chứa lỗi dựa trên phân phối của mẫu sản phẩm chuẩn, (ii) tự động phân cụm các dạng lỗi mới phát sinh mà không làm gián đoạn tiến trình vận hành của hệ thống, và (iii) duy trì khả năng học liên tục để cập nhật tri thức mới. Dữ liệu hình ảnh thu thập từ thực tế gặp hiện tượng mất cân bằng nghiêm trọng giữa số lượng mẫu đạt chuẩn và mẫu lỗi. Nghiên cứu đề xuất giải pháp tích hợp giữa kỹ thuật phát hiện bất thường ngoại tuyến và thuật toán học tăng cường trực tuyến nhằm phân loại các cụm lỗi theo thời gian thực.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[node distance=3.2cm, auto, >=stealth,
+    block/.style={rectangle, draw=blue!80!black, fill=blue!5!white, text width=3.2cm, text centered, minimum height=1.2cm, font=\normalsize, rounded corners=2pt},
+    line/.style={draw=blue!80!black, ->, thick}]
+    \node [block] (input) {Ảnh màn hình điện thoại};
+    \node [block, right of=input, xshift=2.5cm] (phase1) {Phát hiện bất thường ngoại tuyến};
+    \node [block, right of=phase1, xshift=2.5cm] (phase2) {Phân cụm lỗi trực tuyến};
+    \node [block, below of=phase2, yshift=-0.5cm] (output) {Phân loại dạng lỗi};
+
+    \path [line] (input) -- (phase1);
+    \path [line] (phase1) -- node[above, font=\normalsize, text=black] {Ảnh lỗi} (phase2);
+    \path [line] (phase2) -- (output);
+\end{tikzpicture}
+\caption{Sơ đồ tổng quan quy trình kiểm tra và phân loại lỗi màn hình điện thoại.}
+\label{fig:quy_trinh_tong_quan}
+\end{figure}
+
+Sơ đồ tổng quan quy trình kiểm tra và phân loại lỗi màn hình điện thoại được mô tả cụ thể trong Hình \ref{fig:quy_trinh_tong_quan}. Luồng xử lý bắt đầu từ việc tiếp nhận ảnh bề mặt màn hình điện thoại, sau đó dữ liệu được đưa qua khối phát hiện bất thường ngoại tuyến để lọc ra các mẫu sản phẩm đạt chuẩn và giữ lại các ảnh chứa vị trí lỗi. Các ảnh chứa lỗi tiếp tục được chuyển sang khối phân cụm lỗi trực tuyến nhằm tự động gom nhóm và xác định chủng loại khuyết tật mới.
+
+Tiêu chuẩn đánh giá một mẫu ảnh thuộc nhóm bất thường được thiết lập dựa trên khoảng cách biểu diễn không gian ẩn so với ngưỡng phân phối mẫu chuẩn, được xác định thông qua Công thức \ref{eq:threshold}:
+\begin{equation}
+d(z, \mathcal{W}) > 3\sigma
+\label{eq:threshold}
+\end{equation}
+Trong Công thức \ref{eq:threshold}, ký hiệu $z$ biểu thị véc-tơ biểu diễn ẩn thu được từ không gian đặc trưng của mẫu ảnh đầu vào, ký hiệu $\mathcal{W}$ đại diện cho tập hợp các véc-tơ trọng số đại diện cho phân phối mẫu sản phẩm đạt chuẩn trong mô hình huấn luyện, ký hiệu $d(z, \mathcal{W})$ thể hiện khoảng cách Euclid nhỏ nhất từ véc-tơ ẩn $z$ tới tập hợp trọng số $\mathcal{W}$, và ký hiệu $\sigma$ đại diện cho độ lệch chuẩn của sai số tái tạo trên tập dữ liệu mẫu đạt chất lượng. Tất cả các mẫu ảnh có giá trị khoảng cách vượt quá ngưỡng phân phối này sẽ được xác định là bất thường và được chuyển sang khối phân cụm trực tuyến.
+
+Giải pháp đề xuất sử dụng mạng Growing Neural Gas cải tiến kết hợp với cơ chế tích lũy bằng chứng nhằm tối ưu hóa tiến trình phân loại trực tuyến \cite{fritzke1995growing}. Phương pháp học động dựa trên mạng Growing Neural Gas có khả năng tự động thay đổi cấu trúc đồ thị và cập nhật tri thức mới mà không gặp phải hiện tượng quên tri thức cũ. Nghiên cứu kết hợp kỹ thuật tính toán bản đồ entropy và mô hình mã hóa Autoencoder trong pha phát hiện bất thường ngoại tuyến để trích xuất đặc trưng không gian và giảm chiều dữ liệu. Trong pha phân loại trực tuyến, thuật toán cải tiến Evidence-Accumulating Growing Neural Gas kiểm soát mật độ nút và tự động gộp các cụm lỗi gần nhau, giúp nâng cao độ chính xác phân loại trong hệ thống kiểm tra công nghiệp.

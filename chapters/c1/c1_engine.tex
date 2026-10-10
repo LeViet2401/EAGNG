@@ -1,0 +1,27 @@
+\section{Động cơ nghiên cứu}
+
+Mục tiêu tổng quát của luận văn là nghiên cứu, thiết kế và phát triển phương pháp học động hai pha kết hợp giữa mô hình học biểu diễn không gian ngoại tuyến và thuật toán học trực tuyến thích ứng nhằm nâng cao độ chính xác và độ ổn định trong hệ thống kiểm tra chất lượng màn hình điện thoại. Luận văn hướng tới việc giải quyết triệt me hai thách thức lớn bao gồm sự mất cân bằng giữa số lượng mẫu đạt chuẩn và mẫu lỗi, cùng khả năng tự động phân loại các dạng khuyết tật mới phát sinh trên dây chuyền sản xuất. Để đạt được mục tiêu tổng quát, nghiên cứu xác định bốn mục tiêu cụ thể bao gồm (i) xây dựng cơ chế trích xuất đặc trưng đa kênh kết hợp bản đồ độ hỗn loạn không gian và mạng mã hóa tự động, (ii) thiết lập bộ lọc phát hiện bất thường ngoại tuyến dựa trên Mạng khí Nơ-ron Tăng trưởng, (iii) phát triển thuật toán Mạng khí Nơ-ron tăng trưởng Tích lũy Bằng chứng trực tuyến để phân cụm các dạng lỗi mới, và (iv) đánh giá hiệu năng hệ thống trên tập dữ liệu ảnh kiểm tra ngoại quan màn hình điện thoại thực tế v.v…
+
+Nội dung nghiên cứu của luận văn tập trung giải quyết các bài toán kỹ thuật từ khâu xử lý dữ liệu đầu vào đến khâu tổ chức phân cụm trực tuyến. Nghiên cứu triển khai việc trích xuất thông tin độ hỗn loạn không gian để tạo lập cấu trúc ảnh bốn kênh, giúp làm nổi bật các đốm mờ và bọt khí bề mặt. Tiếp theo, luận văn nghiên cứu mô hình nén dữ liệu bằng mạng mã hóa tự động kết hợp thuật toán Mạng khí Nơ-ron tăng trưởng ngoại tuyến nhằm xác định ranh giới phân phối của sản phẩm đạt chất lượng. Đối với pha phân cụm lỗi trực tuyến, nội dung nghiên cứu tập trung đề xuất thuật toán Mạng khí Nơ-ron tăng trưởng Tích lũy Bằng chứng với bốn cải tiến cốt lõi bao gồm cơ chế giảm tốc độ học theo độ tuổi của nút, chèn nút muộn dựa trên vùng đệm tích lũy bằng chứng, kiểm soát sự phát triển đồ thị dựa trên mật độ không gian và gộp vết dựa trên sự chồng lấp hộp giới hạn \cite{fritzke1995growing}. Cuối cùng, luận văn tiến hành thử nghiệm, so sánh đối chứng hiệu năng của phương pháp đề xuất với các thuật toán học không giám sát kinh điển \cite{martinetz1993neural}.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[node distance=1.6cm, auto, >=stealth,
+    block/.style={rectangle, draw, fill=white, text width=3.4cm, text centered, minimum height=1.1cm, font=\normalsize},
+    process/.style={rectangle, draw, fill=white, text width=3.4cm, text centered, minimum height=1.1cm, font=\normalsize},
+    line/.style={draw, ->, thick}]
+    
+    \node [block] (obj) {Mục tiêu nghiên cứu: Kiểm tra lỗi tự động};
+    \node [process, right of=obj, xshift=3.2cm] (content) {Nội dung: Phát triển thuật toán EAGNG};
+    \node [block, right of=content, xshift=3.2cm] (result) {Kết quả: Phân loại lỗi trực tuyến chính xác};
+
+    \path [line] (obj) -- (content);
+    \path [line] (content) -- (result);
+\end{tikzpicture}
+\caption{Mối quan hệ giữa mục tiêu, nội dung nghiên cứu và kết quả dự kiến của luận văn.}
+\label{fig:dong_co_nghien_cuu}
+\end{figure}
+
+Mối liên hệ logic giữa mục tiêu, nội dung nghiên cứu và kết quả dự kiến được thể hiện cụ thể trong Hình \ref{fig:dong_co_nghien_cuu}. Tiến trình nghiên cứu bắt đầu từ việc xác định mục tiêu kiểm tra lỗi tự động, từ đó triển khai nội dung phát triển thuật toán cải tiến nhằm đạt được kết quả phân loại lỗi trực tuyến chính xác trong môi trường sản xuất công nghiệp.
+
+Kết quả dự kiến của luận văn đóng góp cả về mặt lý thuyết khoa học máy tính lẫn giá trị ứng dụng thực tiễn trong công nghiệp chế tạo. Về mặt lý thuyết, nghiên cứu hoàn thiện mô hình Mạng khí Nơ-ron tăng trưởng Tích lũy Bằng chứng với khả năng kiểm soát hiện tượng bùng nổ số lượng nút, ổn định vị trí trọng số và tự thích ứng với các dạng dữ liệu mới phát sinh theo thời gian \cite{fritzke1995growing}. Về mặt thực tiễn, luận văn cung cấp giải pháp phân loại lỗi ngoại quan tự động cho các dây chuyền lắp ráp màn hình điện thoại, giúp loại bỏ công đoạn gán nhãn thủ công tốn kém chi phí, giảm thiểu tỷ lệ bỏ sót khuyết tật và nâng cao năng suất vận hành toàn hệ thống v.v…

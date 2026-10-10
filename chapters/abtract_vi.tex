@@ -1,0 +1,21 @@
+\begin{center}
+\textbf{\large{Tóm tắt}}
+\end{center}
+
+\addcontentsline{toc}{chapter}{Tóm tắt}
+
+\begin{small}
+
+Luận văn nghiên cứu phương pháp tự động phân loại các dạng lỗi hiển thị trên màn hình điện thoại trong quy trình sản xuất công nghiệp bằng mạng khí nơ-ron tăng trưởng hai giai đoạn. Hệ thống kết hợp kỹ thuật xử lý ảnh, mạng nơ-ron sâu và thuật toán tăng trưởng mạng khí nơ-ron tăng trưởng tự tổ chức tích lũy bằng chứng (Evidence-Accumulating Growing Neural Gas - EAGNG). Mô hình giải quyết thách thức về sự thiếu hụt dữ liệu gán nhãn ban đầu và hiện tượng quên tri thức đã học (catastrophic forgetting) khi dữ liệu biến đổi theo thời gian.
+
+Giai đoạn đầu tiên thực hiện tác vụ phát hiện bất thường ngoại tuyến trên các mẫu màn hình đạt chuẩn. Dữ liệu ảnh đầu vào được bổ sung kênh thông tin entropy cục bộ nhằm phản ánh độ biến thiên kết cấu bề mặt. Mạng mã hóa tự động (Autoencoder) tiến hành nén ảnh thành các vectơ biểu diễn không gian tiềm ẩn. Mạng Growing Neural Gas truyền thống huấn luyện trên các vector tiềm ẩn này nhằm thiết lập ranh giới phân bố của sản phẩm bình thường. Trong quá trình suy luận, các mẫu có khoảng cách tới mạng vượt quá ngưỡng ba lần độ lệch chuẩn ($3\sigma$) được xác định là bất thường và chuyển giao sang giai đoạn xử lý tiếp theo.
+
+Giai đoạn thứ hai thực hiện phân cụm lỗi trực tuyến thông qua mạng học động EAGNG với bốn cơ chế cải tiến. Các vector đặc trưng hình thái trích xuất từ mô hình ResNet kết hợp kênh entropy đóng vai trò làm đầu vào huấn luyện. Bốn cơ chế bổ trợ bao gồm: (i) điều chỉnh tốc độ học và mức tích lũy lỗi dựa trên tuổi của nơ-ron nhằm đảm bảo sự hội tụ cấu trúc, (ii) chèn nút hoãn lại dựa trên bằng chứng tích lũy trong bộ đệm nhằm giảm thiểu nhiễu cục bộ, (iii) phát triển cấu trúc mạng nhận biết mật độ nhằm kiểm soát sự phân bố nơ-ron, và (iv) kiểm tra sự chồng lấp hộp giới hạn (bounding box overlap check) nhằm ngăn chặn liên kết không hợp lệ giữa các cụm độc lập. Thuật toán phân cụm thành phần liên thông trong lý thuyết đồ thị được áp dụng trên cấu trúc mạng tối ưu để hoàn tất phân loại dạng lỗi.
+
+Hiệu năng của thuật toán EAGNG được đánh giá qua thực nghiệm trên chuỗi dữ liệu gồm ba nghìn bước thời gian (3000 steps). Trong giai đoạn phân cụm ổn định từ bước 650 đến bước 1800, thuật toán EAGNG đạt giá trị 100\% trên cả ba chỉ số đánh giá gồm chỉ số Rand điều chỉnh (Adjusted Rand Index - ARI), thông tin tương hỗ chuẩn hóa (Normalized Mutual Information - NMI) và độ tinh khiết (Purity). Tại giai đoạn xuất hiện dịch chuyển khái niệm (concept drift) từ bước 1850 đến bước 3000, thuật toán EAGNG duy trì giá trị ARI trung bình là 89,98\%, NMI trung bình là 92,30\% và Purity trung bình là 95,49\%. Tính trên toàn bộ chu kỳ phân cụm từ bước 650 đến bước 3000, mô hình đạt ARI trung bình là 94,99\%, NMI trung bình là 96,15\% và Purity trung bình là 97,74\%. Tại bước thời gian cuối cùng, số lượng nút của mạng EAGNG dừng lại ở mức 268 nút so với 361 nút của mạng Growing Neural Gas truyền thống, giảm 25,76\% dung lượng bộ nhớ nút, đồng thời ghi nhận thời gian tính toán tích lũy 16,39 giây so với 23,69 giây của mô hình truyền thống.
+
+
+\vspace*{1cm}
+\textbf{Từ khóa}: \textit{phát hiện lỗi màn hình}, \textit{học không giám sát}, \textit{học cạnh tranh}, \textit{học liên tục}, \textit{mạng Growing Neural Gas (GNG)}, \textit{Autoencoder}, \textit{ResNet}, \textit{entropy cục bộ}, \textit{quên tri thức đã học}
+
+\end{small}

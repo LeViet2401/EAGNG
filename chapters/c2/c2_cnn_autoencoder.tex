@@ -1,0 +1,139 @@
+\section{Mạng Nơ-ron Tích chập và Autoencoder}
+
+Mạng nơ-ron tích chập và mô hình Autoencoder đóng vai trò nền tảng trong việc tự động hóa quá trình trích xuất đặc trưng và nén dữ liệu hình ảnh. Trong bài toán phát hiện bất thường trên bề mặt màn hình điện thoại ở Pha 1, việc xử lý trực tiếp tensor ảnh bốn kênh có chiều không gian lớn gây ra chi phí tính toán cao và nhiễu dữ liệu. Bằng cách kết hợp khả năng học đặc trưng không gian cục bộ của phép tích chập và khả năng biểu diễn nén của Autoencoder, hệ thống chuyển đổi dữ liệu ảnh đầu vào thành các vectơ biểu diễn ẩn có số chiều nhỏ hơn nhưng bảo toàn các thông tin cấu trúc cốt lõi.
+
+\subsection{Mạng Nơ-ron Tích chập}
+
+Mạng nơ-ron tích chập là một lớp mô hình học sâu được thiết kế chuyên biệt để xử lý dữ liệu cấu trúc lưới hai chiều như ảnh số \cite{lecanu2015deep}. Nguyên lý hoạt động cốt lõi của mạng dựa trên ba cơ chế toán học cơ bản bao gồm: (i) trường thụ cảm cục bộ giúp mạng tập trung vào các vùng điểm ảnh lân cận; (ii) chia sẻ trọng số giúp giảm số lượng tham số cần huấn luyện và tạo tính bất biến đối với phép dịch chuyển; (iii) lấy mẫu giảm nhằm thu gọn kích thước không gian của bản đồ đặc trưng.
+
+Phép toán tích chập hai chiều giữa ma trận ảnh đầu vào hoặc bản đồ đặc trưng lớp trước với một hạt nhân tích chập được định nghĩa theo Công thức \ref{eq:convolution_operation}:
+
+\begin{equation}
+S(i,j) = (I * K)(i,j) = \sum_{m=-M}^{M} \sum_{n=-N}^{N} I(i-m, j-n) K(m,n)
+\label{eq:convolution_operation}
+\end{equation}
+
+Trong Công thức \ref{eq:convolution_operation}, ký hiệu $S(i,j)$ đại diện cho giá trị tại tọa độ $(i,j)$ trên bản đồ đặc trưng đầu ra, $I$ thể hiện ma trận dữ liệu đầu vào, $K$ là ma trận hạt nhân tích chập kích thước $(2M+1) \times (2N+1)$, $m$ và $n$ lần lượt là chỉ số không gian của hạt nhân tích chập theo chiều cao và chiều rộng, toán tử $*$ thể hiện phép tích chập không gian hai chiều.
+
+Sau phép tích chập, một hàm kích hoạt phi tuyến như hàm đơn vị tuyến tính sửa sai được áp dụng để tăng năng lực biểu diễn các mối quan hệ phức tạp. Tiếp theo, các lớp lấy mẫu giảm, phổ biến nhất là lấy mẫu cực đại, được sử dụng để trích xuất các đặc trưng nổi bật nhất trong từng vùng lân cận. Quy trình trích xuất đặc trưng cơ bản thông qua tích chập và lấy mẫu được mô tả trong Hình \ref{fig:cnn_pipeline}.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[every node/.style={transform shape, font=\normalsize}]
+    % Input Layer (dịch sang trái 1.0)
+    \draw[fill=white, draw=black, thick] (-1.6,0) rectangle (1.7,2.5);
+    \node[align=center] at (0.0,1.25) {Tensor đầu vào\\$H \times W \times 4$};
+    
+    % Arrow 1
+    \draw[->, thick, gray] (1.7,1.25) -- (3.7,1.25);
+    \node[above, font=\normalsize] at (2.7,1.25) {Tích chập};
+    
+    % Feature Maps Layer (giữ nguyên, ở giữa)
+    \draw[fill=white, draw=black, thick] (3.9,0.2) rectangle (5.9,2.2);
+    \draw[fill=white, draw=black, thick] (4.1,0.4) rectangle (6.1,2.4);
+    \node[align=center] at (5.1,1.4) {Bản đồ\\đặc trưng};
+    
+    % Arrow 2
+    \draw[->, thick, gray] (6.3,1.25) -- (8.3,1.25);
+    \node[above, font=\normalsize] at (7.3,1.25) {Lấy mẫu};
+    
+    % Pooled Feature Maps (dịch sang phải thêm 1.0)
+    \draw[fill=white, draw=black, thick] (8.5,0.5) rectangle (10.0,2.0);
+    \node[align=center] at (9.25,1.25) {Bản đồ\\nén};
+\end{tikzpicture}
+\caption{Quy trình xử lý dữ liệu qua lớp tích chập và lớp lấy mẫu giảm.}
+\label{fig:cnn_pipeline}
+\end{figure}
+
+Trong Hình \ref{fig:cnn_pipeline}, dữ liệu đầu vào chứa bốn kênh thông tin được biến đổi qua các bộ lọc tích chập để tạo thành chuỗi bản đồ đặc trưng. Các bản đồ đặc trưng này tiếp tục trải qua quá trình lấy mẫu giảm nhằm thu nhỏ kích thước không gian nhưng vẫn giữ lại các tín hiệu hình thái quan trọng cho công đoạn mã hóa tiếp theo.
+
+\subsection{Kiến trúc Autoencoder}
+
+Mạng mã hóa tự động (Autoencoder) là một kiến trúc mạng nơ-ron học không giám sát được thiết kế nhằm học biểu diễn ẩn của dữ liệu bằng cách tái tạo lại chính dữ liệu đầu vào ở đầu ra \cite{goodfellow2016deep}. Cấu trúc tổng thể của Autoencoder gồm hai phần chính: (i) bộ mã hóa thực hiện ánh xạ dữ liệu đầu vào không gian cao sang không gian ẩn có số chiều nhỏ hơn; (ii) bộ giải mã thực hiện ánh xạ từ không gian ẩn trở lại không gian ban đầu để khôi phục ảnh tái tạo.
+
+Bộ mã hóa biến đổi tensor đầu vào $x \in \mathbb{R}^{H \times W \times 4}$ thành vectơ không gian ẩn $z \in \mathbb{R}^d$ thông qua chuỗi các lớp tích chập được mô tả toán học trong Công thức \ref{eq:encoder_func}:
+
+\begin{equation}
+z = f_{\theta}(x) = \sigma(W_e x + b_e)
+\label{eq:encoder_func}
+\end{equation}
+
+Trong Công thức \ref{eq:encoder_func}, ký hiệu $z$ đại diện cho vectơ không gian ẩn thu được, $f_{\theta}$ là hàm ánh xạ của bộ mã hóa phụ thuộc vào tập tham số $\theta$, $x$ là tensor ảnh đầu vào bốn kênh, $W_e$ thể hiện ma trận trọng số của bộ mã hóa, $b_e$ là vectơ độ lệch của bộ mã hóa, và $\sigma$ đại diện cho hàm kích hoạt phi tuyến.
+
+Bộ giải mã nhận vectơ không gian ẩn $z$ và thực hiện quá trình tái tạo lại dữ liệu đầu vào thành $\hat{x} \in \mathbb{R}^{H \times W \times 4}$ thông qua các phép tích chập chuyển vị, được biểu diễn qua Công thức \ref{eq:decoder_func}:
+
+\begin{equation}
+\hat{x} = g_{\phi}(z) = \sigma'(W_d z + b_d)
+\label{eq:decoder_func}
+\end{equation}
+
+Trong Công thức \ref{eq:decoder_func}, ký hiệu $\hat{x}$ đại diện cho tensor ảnh đầu ra tái tạo, $g_{\phi}$ là hàm ánh xạ của bộ giải mã phụ thuộc vào tập tham số $\phi$, $z$ là vectơ không gian ẩn, $W_d$ thể hiện ma trận trọng số của bộ giải mã, $b_d$ là vectơ độ lệch của bộ giải mã, và $\sigma'$ đại diện cho hàm kích hoạt ở lớp xuất dữ liệu.
+
+Sơ đồ tổng quan về kiến trúc mạng Autoencoder xử lý dòng dữ liệu ảnh bốn kênh được thể hiện trong Hình \ref{fig:autoencoder_architecture}.
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[every node/.style={transform shape, font=\fontsize{13pt}{16pt}\selectfont}]
+    % 1. Đầu vào x (Rộng 3.0: từ -1 đến 2)
+    \draw[fill=white, draw=black, thick] (-1,0) rectangle (2,3);
+    \node[align=center] at (0.5,1.5) {Đầu vào $x$\\$H \times W \times 4$};
+    
+    % Mũi tên 1 (Khoảng cách 0.5: từ 2 đến 2.5)
+    \draw[->, thick, black] (2,1.5) -- (2.5,1.5);
+    
+    % 2. Bộ mã hóa (Rộng 2.5: từ 2.5 đến 5.0)
+    \draw[fill=white, draw=black, thick] (2.5,0) -- (5,0.8) -- (5,2.2) -- (2.5,3) -- cycle;
+    \node[align=center] at (3.75,1.5) {Bộ mã hóa\\$f_{\theta}$};
+    
+    % Mũi tên 2 (Khoảng cách 0.5: từ 5.0 đến 5.5)
+    \draw[->, thick, black] (5,1.5) -- (5.5,1.5);
+    
+    % 3. Latent z (Rộng 1.8: từ 5.5 đến 7.3)
+    \draw[fill=white, draw=black, thick] (5.5,0.8) rectangle (7.3,2.2);
+    \node[align=center] at (6.4,1.5) {Latent\\$z$};
+    
+    % Mũi tên 3 (Khoảng cách 0.5: từ 7.3 đến 7.8)
+    \draw[->, thick, black] (7.3,1.5) -- (7.8,1.5);
+    
+    % 4. Bộ giải mã (Rộng 2.5: từ 7.8 đến 10.3)
+    \draw[fill=white, draw=black, thick] (7.8,0.8) -- (10.3,0) -- (10.3,3) -- (7.8,2.2) -- cycle;
+    \node[align=center] at (9.05,1.5) {Bộ giải mã\\$g_{\phi}$};
+    
+    % Mũi tên 4 (Khoảng cách 0.5: từ 10.3 đến 10.8)
+    \draw[->, thick, black] (10.3,1.5) -- (10.8,1.5);
+    
+    % 5. Tái tạo x_hat (Rộng 3.0: từ 10.8 đến 13.8)
+    \draw[fill=white, draw=black, thick] (10.8,0) rectangle (13.8,3);
+    \node[align=center] at (12.3,1.5) {Tái tạo $\hat{x}$\\$H \times W \times 4$};
+\end{tikzpicture}
+\caption{Kiến trúc tổng thể của mạng Autoencoder nén và tái tạo ảnh màn hình.}
+\label{fig:autoencoder_architecture}
+\end{figure}
+
+
+Trong Hình \ref{fig:autoencoder_architecture}, hình thang thu nhỏ biểu thị quá trình nén dữ liệu của bộ mã hóa nhằm trích xuất vectơ đặc trưng $z$ tại vùng nút thắt. Hình thang mở rộng tiếp theo đại diện cho quá trình khôi phục lại cấu trúc tensor ảnh ban đầu của bộ giải mã.
+
+Trong quy trình thực nghiệm của Pha 1, mạng Autoencoder chỉ được huấn luyện ngoại tuyến trên tập dữ liệu ảnh màn hình bình thường. Nhờ đó, không gian ẩn $z$ học được cách biểu diễn hiệu quả các đặc trưng phân bố của sản phẩm đạt tiêu chuẩn chất lượng. Vectơ đặc trưng ẩn $z$ thu được từ bộ mã hóa sau đó được trích xuất trực tiếp để làm dữ liệu đầu vào cho mô hình Growing Neural Gas ngoại tuyến, phục vụ bài toán phân định ngưỡng bất thường ở giai đoạn tiếp theo.
+
+\subsection{Hàm Mất mát Tái tạo}
+
+Hàm mất mát tái tạo đo lường mức độ sai lệch giữa dữ liệu ảnh gốc và dữ liệu ảnh thu được sau quá trình giải mã. Việc lựa chọn hàm mất mát phù hợp quyết định trực tiếp đến khả năng bảo toàn chi tiết cấu trúc nền và độ nhạy của mô hình đối với các đặc trưng cục bộ. Trong luận văn này, sai số bình phương trung bình được sử dụng làm hàm mục tiêu chính để tối ưu hóa tập tham số của mạng Autoencoder \cite{hinton2006reducing}.
+
+Công thức toán học của hàm mất mát sai số bình phương trung bình áp dụng cho dữ liệu tensor bốn kênh được biểu diễn qua Công thức \ref{eq:mse_loss}:
+
+\begin{equation}
+\mathcal{L}_{\text{MSE}}(x, \hat{x}) = \frac{1}{C \cdot H \cdot W} \sum_{c=1}^{C} \sum_{i=1}^{H} \sum_{j=1}^{W} \left( x(c,i,j) - \hat{x}(c,i,j) \right)^2
+\label{eq:mse_loss}
+\end{equation}
+
+Trong Công thức \ref{eq:mse_loss}, ký hiệu $\mathcal{L}_{\text{MSE}}(x, \hat{x})$ thể hiện tổn thất tái tạo tính theo trung bình bình phương sai số, $C$ đại diện cho số lượng kênh dữ liệu đầu vào với giá trị cố định bằng bốn, $H$ là chiều cao ảnh tính bằng điểm ảnh, $W$ là chiều rộng ảnh tính bằng điểm ảnh, $x(c,i,j)$ là giá trị độ sáng hoặc giá trị entropy gốc tại kênh $c$, hàng $i$, cột $j$, và $\hat{x}(c,i,j)$ là giá trị tương ứng được tái tạo bởi bộ giải mã.
+
+Quá trình huấn luyện mô hình Autoencoder thực hiện tối ưu hóa tập tham số $\theta$ và $\phi$ thông qua giải thuật lan truyền ngược nhằm giảm thiểu giá trị tổn thất theo Công thức \ref{eq:optimization_objective}:
+
+\begin{equation}
+(\theta^*, \phi^*) = \arg\min_{\theta, \phi} \mathcal{L}_{\text{MSE}}\left(x, g_{\phi}(f_{\theta}(x))\right)
+\label{eq:optimization_objective}
+\end{equation}
+
+Trong Công thức \ref{eq:optimization_objective}, ký hiệu $\theta^*$ và $\phi^*$ lần lượt là tập hợp các trọng số tối ưu của bộ mã hóa và bộ giải mã thu được sau quá trình huấn luyện, $\arg\min$ đại diện cho phép toán tìm tập tham số làm tối thiểu hóa giá trị của hàm mất mát tái tạo $\mathcal{L}_{\text{MSE}}$.
+
+Đối với các mẫu ảnh không chứa khuyết tật, giá trị mất mát tái tạo $\mathcal{L}_{\text{MSE}}$ duy trì ở mức rất thấp do mô hình đã được tối ưu hóa trên phân bố dữ liệu này. Khi đưa một ảnh có chứa lỗi bề mặt vào mô hình, do mạng chưa từng được học các dạng cấu trúc lỗi bất thường, bộ giải mã sẽ không thể khôi phục chính xác các vùng khuyết tật đó. Sự gia tăng đột biến của sai số tái tạo tại các vùng bị lỗi chính là cơ sở quan trọng giúp gia tăng tính phân biệt của vectơ không gian ẩn $z$, hỗ trợ mô hình Growing Neural Gas thực hiện phát hiện bất thường chính xác hơn.

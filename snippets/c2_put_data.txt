@@ -1,0 +1,7 @@
+Void put (k,b)
+    {
+        Frags=IDAencode (b)
+        Succs=lookup (k,14)
+        For i (0...13)
+        Send (succs[i].ipaddr, k, frags[i])
+    } 

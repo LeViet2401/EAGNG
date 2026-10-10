@@ -1,0 +1,152 @@
+\section{Phát hiện bất thường và phân cụm dựa trên lý thuyết đồ thị}
+
+Hệ thống kiểm tra chất lượng màn hình điện thoại đòi hỏi sự phối hợp chặt chẽ giữa khả năng sàng lọc mẫu bất thường ở Pha một và phân loại khuyết tật ở Pha hai. Việc kết hợp nguyên lý phân phối thống kê cùng lý thuyết đồ thị tạo nên khuôn khổ toán học hoàn chỉnh cho phép phát hiện các khuyết tật vượt khỏi phân phối của ảnh bình thường, đồng thời gom nhóm tự động các dạng lỗi bề mặt có đặc trưng tương đồng. Mục này trình bày nguyên lý phát hiện bất thường dựa trên quy tắc ba Sigma và phương pháp phân cụm đồ thị bằng thành phần liên thông.
+
+\subsection{Nguyên lý phát hiện bất thường dựa trên phân phối thống kê và khoảng cách 3-Sigma}
+
+Phát hiện bất thường dựa trên phân phối thống kê dựa trên giả định rằng các mẫu dữ liệu bình thường tập trung trong một miền không gian ẩn xác định và tuân theo phân phối chuẩn. Trong Pha một của quy trình đề xuất, mạng Autoencoder thực hiện nén các tensor ảnh bốn kênh bình thường thành các vectơ không gian ẩn $z \in \mathbb{R}^d$, sau đó mạng Khí nơ-ron tăng trưởng ngoại tuyến học cấu trúc phân phối của tập hợp các vectơ này. Mỗi mẫu ảnh thử nghiệm $x_{\text{test}}$ khi đi qua bộ mã hóa sẽ thu được vectơ ẩn $z_{\text{test}}$, và khoảng cách đại diện cho sai số tái tổ chức tới nút nơ-ron chiến thắng $w_c$ trong mạng Khí nơ-ron tăng trưởng được xác định theo Công thức \ref{eq:distance_to_winner}:
+
+\begin{equation}
+d(z_{\text{test}}, w_c) = \| z_{\text{test}} - w_c \| = \sqrt{\sum_{k=1}^{d} \left( z_{\text{test}, k} - w_{c, k} \right)^2}
+\label{eq:distance_to_winner}
+\end{equation}
+
+Trong Công thức \ref{eq:distance_to_winner}, ký hiệu $d(z_{\text{test}}, w_c)$ đại diện cho khoảng cách Euclid từ vectơ không gian ẩn thử nghiệm $z_{\text{test}}$ tới vectơ trọng số của nút chiến thắng $w_c$, $d$ là số chiều của không gian ẩn, $z_{\text{test}, k}$ là thành phần thứ $k$ của vectơ ẩn thử nghiệm, và $w_{c, k}$ đại diện cho thành phần thứ $k$ của nút chiến thắng $w_c$.
+
+Giá trị trung bình và độ lệch chuẩn của khoảng cách được tính toán trên toàn bộ tập dữ liệu huấn luyện ảnh bình thường để thiết lập ngưỡng phân định bất thường khoa học \cite{hawkins1980identification}. Kỳ vọng toán học và độ lệch chuẩn của khoảng cách không gian ẩn được định nghĩa lần lượt trong Công thức \ref{eq:mean_distance} và Công thức \ref{eq:std_distance}:
+
+\begin{equation}
+\mu = \frac{1}{N_{\text{good}}} \sum_{i=1}^{N_{\text{good}}} d(z_i, w_{c(i)})
+\label{eq:mean_distance}
+\end{equation}
+
+\begin{equation}
+\sigma = \sqrt{\frac{1}{N_{\text{good}}} \sum_{i=1}^{N_{\text{good}}} \left( d(z_i, w_{c(i)}) - \mu \right)^2}
+\label{eq:std_distance}
+\end{equation}
+
+Trong Công thức \ref{eq:mean_distance} và Công thức \ref{eq:std_distance}, ký hiệu $\mu$ đại diện cho giá trị khoảng cách trung bình của tập mẫu ảnh bình thường, $\sigma$ thể hiện độ lệch chuẩn của phân phối khoảng cách, $N_{\text{good}}$ đại diện cho tổng số lượng mẫu ảnh bình thường trong tập huấn luyện ngoại tuyến, $z_i$ là vectơ ẩn của mẫu thứ $i$, và $w_{c(i)}$ là nút chiến thắng tương ứng với mẫu $z_i$.
+
+Quy tắc ba Sigma được áp dụng để xác định ranh giới phân định bất thường với xác suất tin cậy đạt mức chín mươi chín phẩy bảy mươi ba phần trăm đối với phân phối chuẩn \cite{pukelsheim1994three}. Điều kiện quyết định một mẫu dữ liệu ẩn có thuộc nhóm bất thường và cần chuyển sang Pha hai hay không được thể hiện trong Công thức \ref{eq:three_sigma_decision}:
+
+\begin{equation}
+\text{Anomaly}(z_{\text{test}}) = \begin{cases} 1, & \text{nếu } d(z_{\text{test}}, w_c) > \mu + 3\sigma \\ 0, & \text{ngược lại} \end{cases}
+\label{eq:three_sigma_decision}
+\end{equation}
+
+Trong Công thức \ref{eq:three_sigma_decision}, ký hiệu $\text{Anomaly}(z_{\text{test}})$ nhận giá trị bằng một khi mẫu thử nghiệm bị kết luận là chứa khuyết tật bất thường, và nhận giá trị bằng không khi mẫu thử nghiệm nằm trong giới hạn biến động cho phép của sản phẩm đạt tiêu chuẩn.
+
+Phân bố xác suất và ngưỡng phân định bất thường dựa trên khoảng cách ba Sigma được minh họa trực quan trong Hình \ref{fig:three_sigma_distribution}.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[every node/.style={transform shape, font=\normalsize}]
+    % 1. Tô màu Vùng bình thường (từ 0.2 đến mu + 3*sigma = 6.0)
+    \fill[cyan!15] (0.2,0) -- plot[domain=0.2:6, samples=100] (\x, {3.5*exp(-(\x-3)*(\x-3)/2)}) -- (6,0) -- cycle;
+    
+    % 2. Tô màu Vùng bất thường (phần đuôi > mu + 3*sigma = 6.0)
+    \fill[red!25] (6,0) -- plot[domain=6:7.5, samples=50] (\x, {3.5*exp(-(\x-3)*(\x-3)/2)}) -- (7.5,0) -- cycle;
+    
+    % 3. Đường cong Gauss (Đỉnh mu = 3, sigma = 1)
+    \draw[thick, blue!80!black] plot[domain=0.2:7.5, samples=100] (\x, {3.5*exp(-(\x-3)*(\x-3)/2)});
+    
+    % 4. Trục tọa độ (Chỉ biểu diễn miền khoảng cách d >= 0)
+    \draw[->, thick, black] (-1,0) -- (8.0,0) node[right, font=\normalsize] {Khoảng cách $d(z, w_c)$};
+    \draw[->, thick, black] (-1,0) -- (-1,4.0) node[above, font=\normalsize] {Mật độ xác suất};
+    
+    % 5. Đường trung bình mu
+    \draw[dashed, blue!90!black, thick] (3,0) -- (3,3.5);
+    \node[below, font=\normalsize] at (3,-0.1) {$\mu$};
+    
+    % Các vạch chia sigma tham khảo
+    \draw[gray] (1,0) -- (1,0.1) node[below=2pt, xshift=-0.3cm, font=\small] {$\mu-2\sigma$};
+    \draw[gray] (2,0) -- (2,0.1) node[below=2pt, font=\small] {$\mu-\sigma$};
+    \draw[gray] (4,0) -- (4,0.1) node[below=2pt, font=\small] {$\mu+\sigma$};
+    \draw[gray] (5,0) -- (5,0.1) node[below=2pt, xshift=0.3cm, font=\small] {$\mu+2\sigma$};
+    
+    % 6. Vạch ngưỡng mu + 3*sigma
+    \draw[ultra thick, red!80!black] (6,0) -- (6,2.6);
+    \node[above, font=\normalsize, align=center, red!80!black] at (6,2.6) {Ngưỡng $\mu + 3\sigma$};
+    
+    % 7. Chú thích các vùng
+    % Nhãn Vùng bình thường
+    \node[align=center, font=\normalsize, fill=cyan!15, inner sep=3pt, rounded corners=2pt] at (3,1.5) {Vùng ảnh bình thường\\(Pha 1: Chấp nhận)};
+    
+    % Mũi tên chỉ vào Vùng bất thường ở phần đuôi
+    \node[align=center, font=\normalsize, text=red!80!black] (anomaly_text) at (9, 1.4) {Vùng bất thường\\(Pha 2: Chuyển EAGNG)};
+    \draw[->, >=stealth, thick, red!80!black] (anomaly_text.south) .. controls (6.8,0.7) .. (6.3, 0.12);
+
+\end{tikzpicture}
+\caption{Phân bố khoảng cách Gauss và ngưỡng phân định bất thường dựa trên quy tắc ba Sigma.}
+\label{fig:three_sigma_distribution}
+\end{figure}
+
+Trong Hình \ref{fig:three_sigma_distribution}, đường cong biểu diễn mật độ xác suất khoảng cách của các mẫu ảnh đạt tiêu chuẩn. Vùng tô màu nhạt bên trái đại diện cho miền dữ liệu bình thường, trong khi ranh giới đánh dấu tại điểm ba Sigma tách biệt các mẫu bất thường cần được chuyển tiếp sang Pha hai để thực hiện phân cụm.
+
+\subsection{Phân cụm đồ thị bằng thành phần liên thông}
+
+Phân cụm dựa trên thành phần liên thông chuyển đổi cấu trúc đồ thị mạng nơ-ron thành các tập hợp con rời rạc đại diện cho từng loại khuyết tật độc lập. Sau khi mạng EAGNG hoàn tất quá trình huấn luyện trực tuyến ở Pha hai, cấu trúc mạng được biểu diễn dưới dạng một đồ thị vô hướng $G = (V, E)$, trong đó $V$ là tập hợp tất cả các nút nơ-ron đại diện cho các trung tâm dữ liệu khuyết tật, và $E$ là tập hợp các cạnh nối phản ánh mối quan hệ lân cận giữa các nút.
+
+Hai nút nơ-ron $u \in V$ và $v \in V$ được coi là thuộc cùng một thành phần liên thông nếu tồn tại ít nhất một đường đi nối trực tiếp hoặc gián tiếp giữa hai nút đó trên đồ thị $G$ \cite{hopcroft1973algorithm}. Định nghĩa toán học của tập hợp thành phần liên thông thứ $k$, ký hiệu là $C_k$, được thể hiện qua Công thức \ref{eq:connected_component}:
+
+\begin{equation}
+C_k = \{ v \in V \mid \exists p = (u = v_0, v_1, \dots, v_m = v), \, \forall j \in \{0, \dots, m-1\}, \, (v_j, v_{j+1}) \in E \}
+\label{eq:connected_component}
+\end{equation}
+
+Trong Công thức \ref{eq:connected_component}, ký hiệu $C_k$ đại diện cho tập hợp các nút thuộc thành phần liên thông thứ $k$, $p$ thể hiện dãy các nút tạo thành đường đi từ nút $u$ đến nút $v$, $m$ là độ dài tính bằng số cạnh của đường đi, và $(v_j, v_{j+1})$ đại diện cho cạnh nối trực tiếp giữa nút $v_j$ và nút $v_{j+1}$ nằm trong tập cạnh $E$.
+
+Tập hợp tất cả các thành phần liên thông tạo thành một phép phân hoạch hoàn chỉnh trên tập nút $V$, thỏa mãn các điều kiện phủ kín và rời rạc theo Công thức \ref{eq:graph_partition}:
+
+\begin{equation}
+V = \bigcup_{k=1}^{M} C_k, \quad C_i \cap C_j = \emptyset, \quad \forall i \neq j
+\label{eq:graph_partition}
+\end{equation}
+
+Trong Công thức \ref{eq:graph_partition}, ký hiệu $M$ đại diện cho tổng số lượng cụm khuyết tật độc lập được trích xuất từ đồ thị, $C_i$ và $C_j$ lần lượt thể hiện thành phần liên thông thứ $i$ và thứ $j$, và $\emptyset$ đại diện cho tập hợp rỗng.
+
+Cấu trúc phân tách các cụm khuyết tật riêng biệt thông qua thuật toán tìm thành phần liên thông trên đồ thị EAGNG được minh họa trong Hình \ref{fig:connected_components_graph}.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[every node/.style={transform shape, font=\normalsize}]
+    % Cluster 1 (Scratch defects)
+    \draw[dashed, teal!80, thick, fill=teal!5] (-1,1.5) ellipse (1.8cm and 1.2cm);
+    \node[draw, circle, fill=blue!30, thick, inner sep=3pt] (n1) at (-1.7,1.8) {};
+    \node[draw, circle, fill=blue!30, thick, inner sep=3pt] (n2) at (-0.8,2.1) {};
+    \node[draw, circle, fill=blue!30, thick, inner sep=3pt] (n3) at (-0.7,1.2) {};
+    \node[draw, circle, fill=blue!30, thick, inner sep=3pt] (n4) at (-1.4,1.0) {};
+    
+    \draw[thick, gray] (n1) -- (n2);
+    \draw[thick, gray] (n2) -- (n3);
+    \draw[thick, gray] (n3) -- (n4);
+    \draw[thick, gray] (n4) -- (n1);
+    \node[above, font=\normalsize] at (-1,2.8) {Cụm lỗi $C_1$ (Lỗi hình tròn)};
+
+    % Cluster 2 (Stain defects)
+    \draw[dashed, cyan!80, thick, fill=cyan!5] (6,1.5) ellipse (1.6cm and 1.1cm);
+    \node[draw, circle, fill=teal!40, thick, inner sep=3pt] (m1) at (5.3,1.8) {};
+    \node[draw, circle, fill=teal!40, thick, inner sep=3pt] (m2) at (6.3,1.9) {};
+    \node[draw, circle, fill=teal!40, thick, inner sep=3pt] (m3) at (6.6,1.1) {};
+    \node[draw, circle, fill=teal!40, thick, inner sep=3pt] (m4) at (5.7,1.0) {};
+    
+    \draw[thick, gray] (m1) -- (m2);
+    \draw[thick, gray] (m2) -- (m3);
+    \draw[thick, gray] (m3) -- (m4);
+    \node[above, font=\normalsize] at (6,2.8) {Cụm lỗi $C_2$ (Lỗi hình chữ nhật)};
+
+    % No connection between clusters annotation
+    \draw[<->, thick, dashed, gray] (1,1.5) -- (4,1.5);
+    \node[above, font=\normalsize] at (2.6,1.5) {Không có cạnh};
+    \node[below, font=\normalsize] at (2.6,1.5) {($C_1 \cap C_2 = \emptyset$)};
+\end{tikzpicture}
+\caption{Phân cụm các thành phần liên thông độc lập đại diện cho các dạng khuyết tật bề mặt.}
+\label{fig:connected_components_graph}
+\end{figure}
+
+Trong Hình \ref{fig:connected_components_graph}, các nút nơ-ron thuộc cùng một phân lớp khuyết tật duy trì các liên kết cạnh nội vùng, tạo thành các đường đi liên thông khép kín. Việc thiếu hụt cạnh nối giữa hai nhóm nút giúp phân tách hoàn toàn các dạng khuyết tật khác nhau thành các cụm độc lập.
+
+Phương pháp phân cụm đồ thị bằng thành phần liên thông sở hữu ba ưu thế kỹ thuật vượt trội trong môi trường sản xuất thực tế:
+(i) thuật toán tự động xác định số lượng cụm khuyết tật $M$ dựa trên cấu trúc đồ thị thực tế mà không đòi hỏi thiết lập trước số cụm như các thuật toán phân hoạch truyền thống;
+(ii) khả năng biểu diễn các cụm có hình dạng phi tuyến và cấu trúc hình học phức tạp nhờ tính linh hoạt của các kết nối cạnh;
+(iii) sự kết hợp giữa các thuật toán kiểm soát liên kết của EAGNG và thành phần liên thông giúp loại bỏ các cạnh nối không hợp lệ, ngăn ngừa hiện tượng gộp sai các dạng khuyết tật bề mặt có vị trí gần nhau.

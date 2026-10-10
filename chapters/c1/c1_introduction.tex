@@ -1,0 +1,16 @@
+\chapter{Bài toán kiểm tra màn hình điện thoại}
+\label{chap:c1}
+
+\input{chapters/c1/c1_define}
+\input{chapters/c1/c1_ideal}
+\input{chapters/c1/c1_focus_gng}
+\input{chapters/c1/c1_engine}
+
+\section*{Kết luận Chương 1}
+\addcontentsline{toc}{section}{Kết luận Chương 1}
+
+Chương \ref{chap:c1} đã trình bày tổng quan về bài toán kiểm tra chất lượng bề mặt màn hình điện thoại trong môi trường sản xuất công nghiệp. Bề mặt màn hình điện thoại có cấu trúc phức tạp với nhiều lớp vật liệu khác nhau, khiến các dạng khuyết tật ngoại quan xuất hiện với các hình thái đa dạng. Các phương pháp kiểm tra truyền thống phụ thuộc nhiều vào việc gán nhãn thủ công hoặc các mô hình học máy giám sát cố định, gây ra khó khăn trong việc phát hiện và gom nhóm các dạng lỗi mới phát sinh. Nghiên cứu đã xác định việc kết hợp giữa phát hiện bất thường ngoại tuyến và phân cụm trực tuyến là hướng đi phù hợp để giải quyết vấn đề mất cân bằng dữ liệu và tự động phân loại khuyết tật.
+
+Hệ thống đề xuất trong luận văn được xây dựng dựa trên kiến trúc hai pha nhằm tối ưu hóa tiến trình xử lý dòng dữ liệu ảnh. Pha phát hiện bất thường ngoại tuyến sử dụng bản đồ độ hỗn loạn thông tin không gian kết hợp với mô hình mã hóa tự động và thuật toán Mạng khí Nơ-ron tăng trưởng để nhanh chóng loại bỏ các sản phẩm đạt chất lượng. Pha phân cụm lỗi trực tuyến áp dụng thuật toán Mạng khí Nơ-ron tăng trưởng Tích lũy Bằng chứng cải tiến cùng mạng ResNet để tự động gom nhóm các dạng khuyết tật. Phương pháp đề xuất đã tích hợp bốn cơ chế kỹ thuật bao gồm (i) suy giảm tốc độ học theo độ tuổi của nút, (ii) chèn nút muộn dựa trên vùng đệm bằng chứng, (iii) kiểm soát sự phát triển hình thái dựa trên mật độ không gian, và (iv) gộp các vết lỗi dựa trên sự chồng lấp hộp giới hạn.
+
+Các mục tiêu, nội dung nghiên cứu và kết quả dự kiến của luận văn đã được xác định rõ ràng nhằm đóng góp cả về mặt lý thuyết học máy lẫn tính ứng dụng thực tiễn trong công nghiệp. Luận văn hướng tới việc hoàn thiện mô hình học động trực tuyến có khả năng tự điều chỉnh cấu trúc đồ thị, nâng cao độ chính xác phân loại lỗi và giảm thiểu chi phí vận hành cho nhà máy sản xuất. Để làm cơ sở khoa học cho việc triển khai các phương pháp đề xuất trong các chương tiếp theo, Chương 2 sẽ trình bày chi tiết cơ sở lý thuyết nền tảng về mạng khí nơ-ron tăng trưởng, mô hình mã hóa tự động và lý thuyết Mạng khí Nơ-ron tăng trưởng truyền thống v.v…

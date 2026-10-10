@@ -1,0 +1,23 @@
+global_maintenance (void)
+    { 
+        a= myID 
+        while (1)  
+        { 
+            <key, frags> = database.next(a) 
+            succs = lookup (key, 16) 
+            if ( myID isbetween succ[0] and succ [15] ) 
+            a = myID 
+            else 
+            { 
+                For each s in succs [0..13]
+                Response = send_db_keys (s, database [key...succs[0]) 
+                For each key in response.desired_keys 
+                if (database.contains (key)) 
+                upload (s, database.lookup (key)) 
+                database.delete (key) 
+            } 
+            database.delete_range ([pred...succs[0]) 
+            a = succs[0] 
+        }
+    }
+        

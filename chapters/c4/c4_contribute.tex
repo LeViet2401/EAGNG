@@ -1,0 +1,18 @@
+\section{Thảo luận Kết quả và Đóng góp của Nghiên cứu}
+\label{sec:4_3_discussion_contributions}
+
+Mục này tiến hành thảo luận sâu về cơ chế hoạt động hợp nhất của thuật toán EAGNG, đồng thời phân tích những đóng góp về mặt khoa học và giá trị ứng dụng thực tiễn trong bài toán kiểm tra chất lượng màn hình điện thoại. Các luận điểm được xây dựng dựa trên sự tổng hợp chuỗi kết quả thực nghiệm đã trình bày tại Mục \ref{sec:4_2_results}.
+
+\subsection{Thảo luận về hiệu năng hệ thống và tính hợp nhất cấu trúc}
+\label{sec:4_3_1_system_performance}
+
+Mô hình EAGNG thể hiện sự vượt trội về mặt tổng thể nhờ sự phối hợp đồng bộ giữa bộ đệm tích lũy bằng chứng và cơ chế tự điều chỉnh độ linh hoạt cấu trúc. Sự kết hợp này giúp thuật toán duy trì chỉ số điều chỉnh Rand ở mức $0{,}895$ và chỉ số thông tin tương hỗ chuẩn hóa ở mức $0{,}927$ tại thời điểm xử lý mẫu thứ $3000$. Các kết quả thực nghiệm thu được từ Hình \ref{fig:drift_ari} và Hình \ref{fig:drift_nmi} ở Mục \ref{sec:4_2_1_concept_drift} cho thấy mô hình không bị suy giảm hiệu năng khi gặp dịch chuyển khái niệm liên tục. Ngoài ra, chỉ số dịch chuyển trọng số của các nút cũ duy trì dưới mức $0{,}5$ trong Hình \ref{fig:topo_stability} chứng minh hiện tượng quên thảm họa đã được kiểm soát hiệu quả.
+
+Mặc dù nghiên cứu chưa thực hiện các bài kiểm tra bóc tách riêng biệt từng thành phần cải tiến, sự tương tác đồng thời giữa bộ đệm và quy tắc cập nhật trọng số vẫn được minh chứng rõ ràng thông qua hành vi tổng thể của mô hình. Bộ đệm đóng vai trò lưu giữ các mẫu dữ liệu tạm thời, ngăn chặn việc tạo nút hoặc xóa cạnh quá sớm khi phân bố dữ liệu biến đổi đột ngột. Đồng thời, cơ chế tự thích ứng điều chỉnh tốc độ học của các nút mới lên mức $8{,}9$ trong Hình \ref{fig:topo_stability}, đảm bảo khả năng tiếp thu tri thức mới mà không làm suy biến cấu trúc không gian đã tích lũy. Việc đánh giá mô hình dưới dạng một hệ thống hợp nhất phản ánh chính xác trạng thái hoạt động thực tế trong dây chuyền công nghiệp, nơi các thành phần thuật toán phải phối hợp liên tục theo thời gian thực.
+
+\subsection{Đóng góp khoa học và ý nghĩa ứng dụng thực tiễn}
+\label{sec:4_3_2_contributions}
+
+Về mặt lý thuyết và khoa học, nghiên cứu đóng góp một phương pháp học trực tuyến không giám sát có khả năng tự điều chỉnh cấu trúc mạng theo sự tiến hóa của luồng dữ liệu. Đóng góp của phương pháp EAGNG thể hiện qua ba khía cạnh chính bao gồm: (i) đề xuất cơ chế tích lũy bằng chứng dựa trên bộ đệm để giảm thiểu tác động của nhiễu cục bộ trong chuỗi dữ liệu theo thời gian, (ii) xây dựng chỉ số đo lường sự cân bằng giữa tính linh hoạt và tính ổn định dựa trên độ dịch chuyển chuẩn L2 của trọng số nơ-ron, và (iii) tối ưu hóa mật độ nút mạng giúp duy trì chi phí tính toán ổn định theo chuỗi thời gian xử lý. Phương pháp này mở ra hướng đi cho việc ứng dụng thuật toán học tăng trưởng \cite{fritzke1995growing, furao2006soinn} trong các bài toán phân loại không giám sát trên luồng dữ liệu công nghiệp.
+
+Về mặt ứng dụng thực tiễn, mô hình EAGNG cung cấp một giải pháp tự động hóa khả thi cho hệ thống kiểm tra và phân loại lỗi màn hình điện thoại trong sản xuất. Với thời gian nhịp xử lý trung bình đạt $5{,}46$ mili-giây trên mỗi mẫu như thể hiện trong Hình \ref{fig:takt_time}, mô hình hoàn toàn đáp ứng các tiêu chuẩn khắt khe về tốc độ xử lý của dây chuyền tự động. Việc tự động hình thành $8$ cụm lỗi riêng biệt từ C0 đến C7 trong Hình \ref{fig:vis_eagng} giúp giảm thiểu sự phụ thuộc vào quá trình gán nhãn thủ công. Kết quả này hỗ trợ các kỹ sư nhà máy nhanh chóng phát hiện các dạng lỗi mới xuất hiện, góp phần nâng cao tỷ lệ thành phẩm và giảm chi phí vận hành dây chuyền.

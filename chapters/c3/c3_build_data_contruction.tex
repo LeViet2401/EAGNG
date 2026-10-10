@@ -1,0 +1,46 @@
+\section{Biểu diễn dữ liệu và Xử lý đặc trưng không gian Entropy}
+\label{sec:bieudien_dulieu}
+
+Biểu diễn dữ liệu đa kênh đóng vai trò quyết định trong việc nâng cao độ nhạy của hệ thống đối với các khuyết tật có độ tương phản thấp trên bề mặt màn hình điện thoại. Các phương pháp xử lý ảnh truyền thống dựa trên không gian màu RGB thường gặp khó khăn trong việc phát hiện các vết ố mờ do sự biến đổi độ sáng không đáng kể so với nền xung quanh. Để khắc phục hạn chế này, hệ thống đề xuất tích hợp không gian entropy cục bộ như một kênh thông tin bổ sung nhằm gia tăng khả năng phân tách đặc trưng giữa vùng bề mặt chuẩn và vùng chứa khuyết tật.
+
+\subsection{Thuật toán trích xuất bản đồ Entropy cục bộ}
+\label{subsec:entropy_extraction}
+
+Entropy cục bộ đo lường mức độ không chắc chắn hoặc độ phức tạp của sự phân bố mức xám trong một cửa sổ trượt xung quanh mỗi điểm ảnh. Bản đồ entropy thu được phản ánh sự thay đổi cấu trúc bề mặt, trong đó các vùng chứa đốm tròn hoặc hạt bụi thường thể hiện độ mất trật tự thông tin cao hơn đáng kể so với các vùng bề mặt đồng nhất \cite{shannon1948mathematical}.
+
+Quy trình trích xuất bản đồ entropy cục bộ được thực hiện thông qua các bước tính toán trên từng vùng ảnh lân cận. Đầu tiên, hình ảnh đầu vào được chuyển đổi về dạng ảnh mức xám hai chiều. Tiếp theo, một cửa sổ trượt vuông kích thước $N \times N$ điểm ảnh được quét qua toàn bộ bề mặt hình ảnh với bước nhảy bằng một. Tại mỗi vị trí tâm $(x,y)$ của cửa sổ trượt $W(x,y)$, xác suất xuất hiện $p_k$ của mức xám $k$ được xác định theo Công thức \ref{eq:probability}:
+\begin{equation}
+\label{eq:probability}
+p_k = \frac{n_k}{\sum_{j=0}^{L-1} n_j}
+\end{equation}
+trong đó $n_k$ đại diện cho số lượng điểm ảnh có mức xám $k$ nằm bên trong cửa sổ trượt $W(x,y)$, $L$ biểu diễn tổng số mức xám của hình ảnh với giá trị mặc định bằng 256, và mẫu số thể hiện tổng số điểm ảnh trong cửa sổ trượt $N \times N$.
+
+Giá trị entropy cục bộ $E(x,y)$ tại điểm ảnh tâm $(x,y)$ được tính toán dựa trên định lý entropy thông tin Shannon theo Công thức \ref{eq:entropy}:
+\begin{equation}
+\label{eq:entropy}
+E(x,y) = -\sum_{k=0}^{L-1} p_k \log_2 (p_k + \epsilon)
+\end{equation}
+trong đó $p_k$ là xác suất xuất hiện của mức xám $k$, $\epsilon$ là một hằng số dương cực tiểu được thêm vào nhằm tránh lỗi vô cấm toán học khi $p_k = 0$, và $\log_2$ là hàm logarit cơ số hai. Việc lặp lại phép tính trên toàn bộ các điểm ảnh giúp tạo ra một bản đồ entropy hai chiều có cùng kích thước không gian với hình ảnh ban đầu v.v...
+
+Việc lựa chọn kích thước cửa sổ trượt $N \times N$ ảnh hưởng trực tiếp đến chất lượng trích xuất đặc trưng hình thái. Nếu kích thước $N$ quá nhỏ, bản đồ entropy sẽ bị ảnh hưởng mạnh bởi nhiễu ngẫu nhiên của cảm biến thu nhận ảnh. Ngược lại, nếu kích thước $N$ quá lớn, ranh giới của các vết khuyết tật siêu nhỏ sẽ bị làm mịn quá mức, dẫn đến mất mát thông tin không gian quan trọng. Qua các thực nghiệm khảo sát, kích thước cửa sổ $N = 9$ điểm ảnh được lựa chọn nhằm tối ưu hóa sự cân bằng giữa khả năng triệt tiêu nhiễu và độ sắc nét của biên giới khuyết tật.
+
+\subsection{Kỹ thuật ghép kênh RGB-E và Chuẩn hóa dữ liệu}
+\label{subsec:channel_concatenation}
+
+Kỹ thuật ghép kênh kết hợp bản đồ entropy vào không gian màu nguyên bản nhằm tạo ra cấu trúc dữ liệu bốn kênh RGB-E đồng bộ về kích thước không gian. Cấu trúc dữ liệu mở rộng này cung cấp đầy đủ thông tin màu sắc, độ sáng và cấu trúc bề mặt cho các mô hình trích xuất đặc trưng phía sau.
+
+Vectơ biểu diễn dữ liệu bốn kênh $I_{RGB-E}(x,y)$ tại tọa độ $(x,y)$ được hình thành bằng cách ghép nối trực tiếp bản đồ entropy vào tập hợp các kênh màu tiêu chuẩn theo Công thức \ref{eq:rgbe}:
+\begin{equation}
+\label{eq:rgbe}
+I_{RGB-E}(x,y) = \left[ R(x,y), G(x,y), B(x,y), E_{norm}(x,y) \right]^T
+\end{equation}
+trong đó $R(x,y)$, $G(x,y)$, và $B(x,y)$ lần lượt đại diện cho cường độ giá trị của các kênh màu đỏ, xanh lá cây và xanh dương tại điểm ảnh $(x,y)$, trong khi $E_{norm}(x,y)$ biểu diễn giá trị entropy cục bộ đã qua chuẩn hóa.
+
+Do phạm vi giá trị của bản đồ entropy ban đầu khác biệt so với khoảng giá trị màu sắc, việc chuẩn hóa dữ liệu là bắt buộc nhằm đảm bảo tính đồng đều về mặt miền giá trị giữa các kênh đầu vào. Giá trị entropy cục bộ $E(x,y)$ được biến đổi về khoảng $[0, 1]$ thông qua kỹ thuật chuẩn hóa Cực tiểu - Cực đại theo Công thức \ref{eq:minmax}:
+\begin{equation}
+\label{eq:minmax}
+E_{norm}(x,y) = \frac{E(x,y) - E_{min}}{E_{max} - E_{min} + \delta}
+\end{equation}
+trong đó $E_{min}$ và $E_{max}$ lần lượt đại diện cho giá trị entropy nhỏ nhất và lớn nhất ghi nhận được trên toàn bộ bản đồ ảnh, còn $\delta$ là hằng số dương cực tiểu ngăn ngừa hiện tượng chia cho số không.
+
+Quy trình chuẩn hóa bốn kênh giúp ổn định quá trình lan truyền ngược và tăng tốc độ hội tụ khi huấn luyện các mạng nơ-ron sâu trong hệ thống. Dữ liệu bốn kênh sau khi xử lý đáp ứng đầy đủ điều kiện về mặt phân bố để làm đầu vào cho mô hình Autoencoder ở Pha 1 và mạng ResNet cải tiến ở Pha 2 \cite{he2016deep}.

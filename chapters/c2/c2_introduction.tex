@@ -1,0 +1,27 @@
+\sloppy
+\chapter{Cơ sở lý thuyết}
+\label{chap:c2}
+
+Chương này trình bày toàn bộ nền tảng lý thuyết cốt lõi làm cơ sở cho việc nghiên cứu và phát triển phương pháp học động trong hệ thống kiểm tra lỗi cho màn hình điện thoại. Các nội dung được hệ thống hóa từ lý thuyết xử lý ảnh số, biểu diễn entropy không gian, kiến trúc mạng nơ-ron tích chập tự mã hóa, mô hình học dư ResNet, các thuật toán phân cụm không giám sát họ Neural Gas, đến lý thuyết phát hiện bất thường dựa trên phân phối thống kê và bài toán học liên tục trong môi trường công nghiệp.
+
+\input{chapters/c2/c2_preprocessing_and_feature}
+\input{chapters/c2/c2_cnn_autoencoder}
+\input{chapters/c2/c2_resnet}
+\input{chapters/c2/c2_gng}
+\input{chapters/c2/c2_base_for_eagng}
+\input{chapters/c2/c2_connection_components}
+\input{chapters/c2/c2_continual_learning}
+
+\section*{Kết luận Chương 2}
+\addcontentsline{toc}{section}{Kết luận Chương 2}
+
+Chương \ref{chap:c2} đã trình bày tổng quan hệ thống cơ sở lý thuyết về mạng Khí nơ-ron tăng trưởng và các mở rộng toán học nhằm giải quyết bài toán tự động phân loại khuyết tật trong kiểm tra chất lượng màn hình thiết bị di động. Nội dung chương đã phân tích chi tiết nguyên lý vận hành của thuật toán Khí nơ-ron tăng trưởng truyền thống, đồng thời chỉ ra các hạn chế kỹ thuật liên quan đến hiện tượng bùng nổ số lượng nút nơ-ron và nguy cơ sáp nhập sai các cụm khuyết tật riêng biệt do nhiễu không gian. Bên cạnh đó, khung toán học của bài toán học liên tục cũng được hệ thống hóa nhằm làm rõ thách thức về mâu thuẫn giữa tính dẻo và tính ổn định trong môi trường xử lý luồng dữ liệu biến đổi.
+
+Các cải tiến toán học cốt lõi của mô hình EAGNG được tổng hợp nhằm tạo tiền đề khắc phục các tồn tại kỹ thuật trên thông qua bốn cơ chế chính:
+(i) mô hình hóa quy luật suy giảm tốc độ học và mức tích lũy sai số theo độ tuổi nút nhằm duy trì tính ổn định của cấu trúc tri thức;
+(ii) thiết lập vùng đệm bộ nhớ tích lũy bằng chứng kết hợp phương pháp ước lượng mật độ nhân Gauss để hoãn chèn nút đối với các mẫu dữ liệu ngoại lai;
+(iii) đánh giá mật độ không gian cục bộ nhằm kiểm soát sự tăng trưởng số lượng nút tại các vùng dữ liệu có mật độ cao;
+(iv) áp dụng lý thuyết hình học bao không gian để kiểm soát điều kiện tạo cạnh nối giữa các cụm nơ-ron.
+Bên cạnh đó, việc tích hợp quy tắc phân phối thống kê ba Sigma cho Pha một và thuật toán thành phần liên thông trên đồ thị cho Pha hai tạo nên cơ chế hoàn chỉnh cho phép lọc bỏ ảnh bình thường và phân nhóm chính xác các dạng lỗi bề mặt.
+
+Toàn bộ các nguyên lý toán học và mô hình lý thuyết được tổng hợp trong Chương \ref{chap:c2} đóng vai trò là nền tảng khoa học trực tiếp cho việc thiết kế kiến trúc chi tiết của hệ thống EAGNG. Trên cơ sở lý thuyết đã được thiết lập, Chương \ref{chap:c3} sẽ trình bày chi tiết phương pháp đề xuất, cấu trúc thuật toán tổng quát, quy trình xử lý dữ liệu luồng thực tế và cách thức hiện thực hóa hệ thống phân loại khuyết tật màn hình điện thoại.

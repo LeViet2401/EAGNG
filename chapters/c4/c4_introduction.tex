@@ -1,0 +1,26 @@
+\chapter{Kết quả thực nghiệm và Đánh giá}
+\label{chap:c4}
+
+Chương này trình bày toàn diện các kết quả thu được từ quá trình nghiên cứu và triển khai hệ thống. Nội dung được tổ chức thành ba phần chính: đầu tiên là mô tả ứng dụng demo thực tế đã được xây dựng; tiếp theo là các kết quả thực nghiệm chi tiết về khả năng sinh dữ liệu, trích xuất đặc trưng và học liên tục; cuối cùng là các phân tích so sánh định lượng để làm rõ hiệu quả của các cải tiến đề xuất so với các phương pháp cơ sở.
+
+\input{chapters/c4/c4_setup_scenario}
+\input{chapters/c4/c4_analysis_result}
+\input{chapters/c4/c4_contribute}
+%\input{chapters/c4/c4_app_demo}
+
+
+\section*{Kết luận Chương 4}
+\addcontentsline{toc}{section}{Kết luận Chương 4}
+
+
+Chương \ref{chap:c4} đã trình bày chi tiết các kết quả thực nghiệm từ việc xây dựng dữ liệu giả lập, huấn luyện mô hình trích xuất đặc trưng đến việc triển khai hệ thống học liên tục trên phần mềm demo thực tế. Dựa trên các số liệu định lượng và phân tích trực quan, có thể rút ra các kết luận quan trọng sau:
+
+\begin{itemize}
+    \item \textbf{Về dữ liệu và tiền xử lý:} Thuật toán sinh dữ liệu giả lập đã tạo ra nguồn dữ liệu huấn luyện phong phú, khắc phục được tình trạng thiếu hụt mẫu lỗi trong công nghiệp. Đặc biệt, việc tích hợp kênh Entropy cục bộ đã chứng minh được vai trò quyết định trong việc nâng cao khả năng phát hiện các lỗi có độ tương phản thấp (như đường kẻ mờ), cải thiện đáng kể độ nhạy của mô hình so với phương pháp chỉ sử dụng ảnh mức xám truyền thống.
+    
+    \item \textbf{Về khả năng học liên tục:} Mạng Growing Neural Gas (GNG) đã giải quyết thành công bài toán thích nghi cấu trúc. Thông qua các cơ chế sinh nơ-ron (Insertion) và loại bỏ liên kết (Edge Removal), hệ thống đã học được các tác vụ mới (lỗi hình chữ nhật, lỗi tam giác) mà không làm suy giảm độ chính xác trên các tác vụ cũ (lỗi đốm tròn, lỗi đường kẻ). Kết quả so sánh cho thấy GNG duy trì độ chính xác trung bình trên 96\% qua 3 giai đoạn, vượt trội hoàn toàn so với phương pháp tinh chỉnh (Fine-tuning) vốn bị ảnh hưởng nặng nề bởi hiện tượng quên thảm họa.
+    
+    \item \textbf{Về tính khả thi ứng dụng:} Trong quá trình benchmark trên 3.000 ảnh, thuật toán EAGNG hoàn thành toàn bộ quá trình xử lý trong khoảng 16.39 giây, tương ứng với takt time trung bình khoảng 5.46 ms/ảnh. Ở 50 ảnh cuối của tập benchmark, takt time đạt khoảng 10.19 ms/ảnh (takt time tăng lên do cần xử lý thêm các dữ liệu có trong bộ đệm). Kết quả cho thấy hệ thống có khả năng đáp ứng yêu cầu xử lý trực tuyến với tốc độ cao trong môi trường kiểm tra sản xuất.
+\end{itemize}
+
+Những kết quả khả quan này là minh chứng thực tiễn cho tính đúng đắn của phương pháp luận đã đề ra. Trên cơ sở đó, phần Kết Luận sẽ tổng kết lại toàn bộ nội dung luận văn, đồng thời chỉ ra những hạn chế còn tồn tại và đề xuất các hướng phát triển tiềm năng để hoàn thiện hệ thống trong tương lai.

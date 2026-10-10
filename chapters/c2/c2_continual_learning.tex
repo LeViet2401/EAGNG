@@ -1,0 +1,127 @@
+\section{Bài toán Học liên tục}
+
+Bài toán học liên tục đóng vai trò trung tâm trong các hệ thống học máy vận hành trên luồng dữ liệu biến đổi theo thời gian. Môi trường vận hành thực tế luôn tồn tại sự dịch chuyển phân bố dữ liệu đầu vào do các yếu tố vật lý và điều kiện môi trường. Các mô hình học máy truyền thống thường được thiết kế dựa trên giả định dữ liệu độc lập và phân bố đồng nhất, dẫn đến sự suy giảm hiệu năng khi áp dụng vào luồng dữ liệu mở. Lĩnh vực học liên tục tập trung nghiên cứu các nguyên lý toán học và cơ chế thuật toán cho phép hệ thống tích lũy tri thức mới một cách bền vững mà không làm suy giảm khả năng xử lý trên các phân bố dữ liệu đã ghi nhận trong quá khứ.
+
+\subsection{Mâu thuẫn giữa tính dẻo và tính ổn định}
+
+Mâu thuẫn giữa tính dẻo và tính ổn định phản ánh thách thức nền tảng trong việc thiết kế các hệ thống học thích ứng động. Tính dẻo đại diện cho khả năng của hệ thống trong việc điều chỉnh trạng thái không gian tham số để tiếp thu thông tin mới từ luồng dữ liệu hiện tại \cite{grossberg1987competitive}. Ngược lại, tính ổn định đảm bảo rằng các cấu trúc biểu diễn đã được tối ưu hóa trong quá khứ không bị suy biến. Khi một hệ thống quá nghiêng về tính dẻo, hiện tượng quên lãng thảm khốc sẽ xảy ra, làm mất hoàn toàn khả năng nhận dạng các phân lớp dữ liệu cũ \cite{french1999catastrophic}.
+
+Khung toán học tổng quát của bài toán học liên tục được mô hình hóa thông qua một chuỗi các nhiệm vụ nối tiếp $t \in \{1, 2, \dots, T\}$. Tại mỗi bước thời gian $t$, mô hình tiếp nhận phân bố dữ liệu $\mathcal{D}_t$ và hướng tới việc tối ưu hóa hàm mất mát toàn cục được biểu diễn trong Công thức \ref{eq:continual_learning_general_loss}:
+
+\begin{equation}
+\mathcal{L}_{\text{total}}(\theta_t) = \mathbb{E}_{(x, y) \sim \mathcal{D}_t} \left[ \ell(f(x; \theta_t), y) \right] + \Omega(\theta_t, \theta_{1:t-1})
+\label{eq:continual_learning_general_loss}
+\end{equation}
+
+Trong Công thức \ref{eq:continual_learning_general_loss}, ký hiệu $\mathcal{L}_{\text{total}}(\theta_t)$ đại diện cho tổng giá trị mất mát của mô hình tại thời điểm $t$, $\theta_t$ thể hiện tập hợp tham số trạng thái của mạng tại bước $t$, $\mathbb{E}_{(x,y) \sim \mathcal{D}_t}$ là giá trị kỳ vọng toán học trên phân bố dữ liệu của nhiệm vụ $t$, $\ell(f(x; \theta_t), y)$ thể hiện hàm mất mát đo lường độ sai lệch giữa đầu ra dự báo $f(x; \theta_t)$ và nhãn mục tiêu $y$, và $\Omega(\theta_t, \theta_{1:t-1})$ đại diện cho thành phần phạt số học nhằm bảo toàn tri thức từ các tập tham số lịch sử $\theta_{1:t-1}$.
+
+\subsection{Các hướng tiếp cận lý thuyết chủ đạo trong Học liên tục}
+
+Các phương pháp nghiên cứu học liên tục trong lý thuyết học máy được phân chia thành ba nhóm tiếp cận chính dựa trên cơ chế kiểm soát không gian tham số và bộ nhớ. Nhóm tiếp cận thứ nhất dựa trên ràng buộc tham số nhằm hạn chế sự biến động của các trọng số quan trọng đối với các nhiệm vụ trước đó thông qua thành phần phạt trong hàm mất mát \cite{kirkpatrick2017overcoming}. Nhóm tiếp cận thứ hai dựa trên việc phát lại dữ liệu hoặc tạo mẫu tái tạo nhằm duy trì sự hiện diện của phân bố dữ liệu cũ trong quá trình tối ưu hóa các mẫu dữ liệu mới \cite{lopez2017gradient}. Nhóm tiếp cận thứ ba dựa trên việc mở rộng linh hoạt kiến trúc mạng, trong đó không gian biểu diễn được bổ sung các thành phần mới khi tiếp nhận luồng dữ liệu chứa thông tin chưa từng xuất hiện.
+
+Cấu trúc phân loại các hướng tiếp cận lý thuyết chủ đạo trong bài toán học liên tục được tổng hợp trong Hình \ref{fig:continual_learning_taxonomy}.
+
+\begin{figure}[h!]
+\centering
+
+\begin{tikzpicture}[
+    every node/.style={
+        font=\normalsize,
+        align=center
+    },
+    box/.style={
+        rectangle,
+        rounded corners=2pt,
+        thick,
+        fill=white,
+        draw=black,
+        minimum height=1.35cm,
+        inner xsep=6pt,
+        inner ysep=6pt
+    },
+    arrow/.style={
+        ->,
+        thick,
+        gray!60
+    }
+]
+
+% =========================================================
+% Luồng dữ liệu
+% =========================================================
+\node[
+    box,
+    text width=2.8cm
+] (data) at (1.5,1.8) {
+    Luồng dữ liệu\\
+    $\mathcal{D}_1,\mathcal{D}_2,\dots,\mathcal{D}_T$
+};
+
+% =========================================================
+% Cơ chế điều phối
+% =========================================================
+\node[
+    box,
+    text width=2.8cm
+] (controller) at (5.0,1.8) {
+    Cơ chế điều phối\\
+    Học liên tục
+};
+
+% =========================================================
+% Các nhánh
+% =========================================================
+
+% Ràng buộc tham số
+\node[
+    box,
+    text width=4.2cm
+] (regularization) at (9.8,4.0) {
+    Ràng buộc tham số\\
+    (Regularization-based)
+};
+
+% Phát lại dữ liệu
+\node[
+    box,
+    text width=4.2cm
+] (replay) at (9.8,1.8) {
+    Phát lại dữ liệu\\
+    (Replay-based)
+};
+
+% Động hóa kiến trúc
+\node[
+    box,
+    text width=4.2cm
+] (architecture) at (9.8,-0.4) {
+    Động hóa kiến trúc\\
+    (Architecture-based)
+};
+
+% =========================================================
+% Connections
+% =========================================================
+
+\draw[arrow]
+    (data.east) -- (controller.west);
+
+\draw[arrow]
+    (controller.east) -- (regularization.west);
+
+\draw[arrow]
+    (controller.east) -- (replay.west);
+
+\draw[arrow]
+    (controller.east) -- (architecture.west);
+
+\end{tikzpicture}
+
+\caption{Cấu trúc phân loại các hướng tiếp cận lý thuyết trong bài toán học liên tục.}
+\label{fig:continual_learning_taxonomy}
+
+\end{figure}
+
+Trong Hình \ref{fig:continual_learning_taxonomy}, luồng dữ liệu biến đổi theo thời gian được tiếp nhận và xử lý qua khối điều phối trung tâm nhằm cân bằng tính dẻo và tính ổn định. Ba nhánh tiếp cận lý thuyết tương ứng với ba chiến lược tối ưu hóa không gian tham số, bộ nhớ đệm và kiến trúc mô hình.
+
+Mỗi hướng tiếp cận lý thuyết mang lại các đặc tính tính toán riêng biệt trong môi trường xử lý trực tuyến. Phương pháp ràng buộc tham số có ưu điểm là giữ nguyên kích thước mô hình cố định, nhưng chịu giới hạn về dung lượng biểu diễn khi số lượng nhiệm vụ gia tăng. Phương pháp phát lại dữ liệu giúp duy trì chính xác ranh giới phân định của các phân lớp cũ, nhưng đòi hỏi dung lượng bộ nhớ lưu trữ bổ sung cho các tập dữ liệu quá khứ. Phương pháp thích ứng kiến trúc động cho phép mô hình mở rộng dung lượng biểu diễn một cách tự nhiên theo độ phức tạp của dữ liệu, tuy nhiên đòi hỏi cơ chế kiểm soát sự tăng trưởng để tránh bùng nổ tài nguyên tính toán v.v...

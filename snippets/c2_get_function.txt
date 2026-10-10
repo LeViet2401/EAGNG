@@ -1,0 +1,22 @@
+block get (k) 
+    { 
+        frags = [];
+        succs = lookup (k,7) 
+        sort_by_latency (succs) 
+        for ( i = 0; i < succs && i <14; i++ ) 
+              { 
+                <ret, data> = download (key, succ[i])
+                if(ret ==OK) 
+                frags.push (data) 
+                <ret, block> = IDAdecode (frags) 
+                if (ret == OK)  
+                    return (SHA-1(block) != k) ? FAILURE : block 
+                if (i == succs - 1) 
+                      { 
+                         newsuccs = get_successor_list ( succs [i] ) 
+                         sort_by_latency (newsuccs) 
+                         succs.append (newsuccs) 
+                       } 
+                 } 
+         return FAILURE 
+    }

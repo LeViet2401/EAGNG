@@ -1,0 +1,87 @@
+\babel@toc {vietnamese}{}\relax 
+\contentsline {chapter}{Lời cảm ơn}{}{Doc-Start}%
+\contentsline {chapter}{Lời cam đoan}{i}{Doc-Start}%
+\contentsline {chapter}{Tóm tắt}{ii}{Doc-Start}%
+\contentsline {chapter}{Abstract}{iv}{Doc-Start}%
+\contentsline {chapter}{Mục lục}{v}{Doc-Start}%
+\contentsline {chapter}{Danh s\'ach h\`inh v\~e}{ix}{Doc-Start}%
+\contentsline {chapter}{Danh s\'ach b\h {a}ng}{xi}{Doc-Start}%
+\contentsline {chapter}{Danh mục các từ viết tắt}{xii}{chapter*.1}%
+\contentsline {chapter}{Mở đầu}{1}{chapter*.2}%
+\contentsline {chapter}{\numberline {1}Bài toán kiểm tra màn hình điện thoại}{3}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Mô tả bài toán}{3}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Ý tưởng và hướng tiếp cận của bài toán}{5}{section.1.2}%
+\contentsline {section}{\numberline {1.3}GNG trong kiểm tra màn hình điện thoại}{7}{section.1.3}%
+\contentsline {subsection}{\numberline {1.3.1}Tổng quan về GNG}{7}{subsection.1.3.1}%
+\contentsline {subsection}{\numberline {1.3.2}Ứng dụng và các nhược điểm của GNG}{8}{subsection.1.3.2}%
+\contentsline {subsection}{\numberline {1.3.3}GNG đối với bài toán kiểm tra hình ảnh lỗi trên màn hình điện thoại}{9}{subsection.1.3.3}%
+\contentsline {section}{\numberline {1.4}Động cơ nghiên cứu}{10}{section.1.4}%
+\contentsline {section}{Kết luận Chương 1}{11}{section*.7}%
+\contentsline {chapter}{\numberline {2}Cơ sở lý thuyết}{13}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Tổng quan về Xử lý ảnh và Trích chọn đặc trưng}{13}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Biểu diễn ảnh số và Không gian mức xám}{13}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}Lý thuyết thông tin và Shannon Entropy}{15}{subsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.1.3}Entropy cục bộ trong phân tích kết cấu}{16}{subsection.2.1.3}%
+\contentsline {section}{\numberline {2.2}Mạng Nơ-ron Tích chập và Autoencoder}{17}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Mạng Nơ-ron Tích chập}{17}{subsection.2.2.1}%
+\contentsline {subsection}{\numberline {2.2.2}Kiến trúc Autoencoder}{18}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Hàm Mất mát Tái tạo}{20}{subsection.2.2.3}%
+\contentsline {section}{\numberline {2.3}Mạng nơ-ron tích chập ResNet cho trích xuất đặc trưng hình thái}{21}{section.2.3}%
+\contentsline {subsection}{\numberline {2.3.1}Cơ chế Học dư và Kiến trúc Residual Block}{21}{subsection.2.3.1}%
+\contentsline {subsection}{\numberline {2.3.2}Trích xuất đặc trưng hình thái cho luồng dữ liệu bốn kênh}{22}{subsection.2.3.2}%
+\contentsline {subsection}{\numberline {2.3.3}Vai trò của ResNet trong quy trình phân cụm trực tuyến EAGNG}{24}{subsection.2.3.3}%
+\contentsline {section}{\numberline {2.4}Mạng nơ-ron không giám sát và Growing Neural Gas}{24}{section.2.4}%
+\contentsline {subsection}{\numberline {2.4.1}Mạng tự tổ chức Kohonen}{24}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.4.2}Mạng Khí nơ-ron}{26}{subsection.2.4.2}%
+\contentsline {subsection}{\numberline {2.4.3}Mạng Khí nơ-ron tăng trưởng}{26}{subsection.2.4.3}%
+\contentsline {section}{\numberline {2.5}Cơ sở toán học cho các cải tiến của thuật toán EAGNG}{29}{section.2.5}%
+\contentsline {subsection}{\numberline {2.5.1}Lý thuyết suy giảm tốc độ học thích ứng theo vòng đời nút}{29}{subsection.2.5.1}%
+\contentsline {subsection}{\numberline {2.5.2}Cơ chế đệm bộ nhớ và Ước lượng mật độ không gian cục bộ}{30}{subsection.2.5.2}%
+\contentsline {subsection}{\numberline {2.5.3}Lý thuyết hình học bao không gian trong kiểm soát liên kết đồ thị}{32}{subsection.2.5.3}%
+\contentsline {section}{\numberline {2.6}Phát hiện bất thường và phân cụm dựa trên lý thuyết đồ thị}{33}{section.2.6}%
+\contentsline {subsection}{\numberline {2.6.1}Nguyên lý phát hiện bất thường dựa trên phân phối thống kê và khoảng cách 3-Sigma}{34}{subsection.2.6.1}%
+\contentsline {subsection}{\numberline {2.6.2}Phân cụm đồ thị bằng thành phần liên thông}{36}{subsection.2.6.2}%
+\contentsline {section}{\numberline {2.7}Bài toán Học liên tục}{37}{section.2.7}%
+\contentsline {subsection}{\numberline {2.7.1}Mâu thuẫn giữa tính dẻo và tính ổn định}{38}{subsection.2.7.1}%
+\contentsline {subsection}{\numberline {2.7.2}Các hướng tiếp cận lý thuyết chủ đạo trong Học liên tục}{38}{subsection.2.7.2}%
+\contentsline {section}{Kết luận Chương 2}{39}{section*.18}%
+\contentsline {chapter}{\numberline {3}Kiến trúc Hệ thống và Thuật toán EAGNG Phân cụm Khuyết tật Trực tuyến}{41}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Kiến trúc tổng thể hệ thống đề xuất}{41}{section.3.1}%
+\contentsline {subsection}{\numberline {3.1.1}Pha 1: Phát hiện bất thường ngoại tuyến}{42}{subsection.3.1.1}%
+\contentsline {subsection}{\numberline {3.1.2}Pha 2: Phân cụm lỗi thích nghi trực tuyến bằng thuật toán EAGNG}{43}{subsection.3.1.2}%
+\contentsline {section}{\numberline {3.2}Biểu diễn dữ liệu và Xử lý đặc trưng không gian Entropy}{44}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Thuật toán trích xuất bản đồ Entropy cục bộ}{44}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Kỹ thuật ghép kênh RGB-E và Chuẩn hóa dữ liệu}{45}{subsection.3.2.2}%
+\contentsline {section}{\numberline {3.3}Trích xuất đặc trưng chuyên biệt cho hai pha}{46}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}Mạng mã hóa tự động: Nén không gian tiềm ẩn nhận dạng mẫu chuẩn}{46}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}Mạng ResNet bốn kênh: Trích xuất đặc trưng hình thái lỗi}{47}{subsection.3.3.2}%
+\contentsline {subsection}{\numberline {3.3.3}Hàm mất mát và Tối ưu hóa mạng trích xuất đặc trưng}{48}{subsection.3.3.3}%
+\contentsline {section}{\numberline {3.4}Mô hình phát hiện bất thường ngoại tuyến}{48}{section.3.4}%
+\contentsline {subsection}{\numberline {3.4.1}Huấn luyện GNG ngoại tuyến trên không gian tiềm ẩn}{49}{subsection.3.4.1}%
+\contentsline {subsection}{\numberline {3.4.2}Cơ chế phân loại bất thường dựa trên khoảng cách ngưỡng ba lần độ lệch chuẩn}{50}{subsection.3.4.2}%
+\contentsline {section}{\numberline {3.5}Thuật toán phân cụm lỗi trực tuyến EAGNG}{52}{section.3.5}%
+\contentsline {subsection}{\numberline {3.5.1}Cơ chế suy giảm tốc độ học và tích lũy lỗi theo tuổi nút}{52}{subsection.3.5.1}%
+\contentsline {subsection}{\numberline {3.5.2}Kiểm tra chồng lấp Bounding Box kiểm soát liên kết cạnh}{53}{subsection.3.5.2}%
+\contentsline {subsection}{\numberline {3.5.3}Cơ chế trì hoãn chèn dựa trên bằng chứng và học cục bộ}{54}{subsection.3.5.3}%
+\contentsline {subsection}{\numberline {3.5.4}Phát triển cấu trúc nhạy mật độ}{54}{subsection.3.5.4}%
+\contentsline {subsection}{\numberline {3.5.5}Phân loại cụm lỗi bằng thuật toán Connected-Component trên đồ thị EAGNG}{55}{subsection.3.5.5}%
+\contentsline {subsection}{\numberline {3.5.6}Thuật toán tổng thể và Mã giả EAGNG}{56}{subsection.3.5.6}%
+\contentsline {section}{\numberline {3.6}Công cụ tự động sinh tập dữ liệu khuyết tật mô phỏng}{57}{section.3.6}%
+\contentsline {section}{Kết luận Chương 3}{61}{section*.22}%
+\contentsline {chapter}{\numberline {4}Kết quả thực nghiệm và Đánh giá}{62}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Thiết lập thực nghiệm và Kịch bản đánh giá trôi dạt khái niệm}{62}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}Môi trường thực nghiệm và Cơ sở hạ tầng tính toán}{62}{subsection.4.1.1}%
+\contentsline {subsection}{\numberline {4.1.2}Cấu hình tham số thực nghiệm và thuật toán EAGNG}{64}{subsection.4.1.2}%
+\contentsline {subsection}{\numberline {4.1.3}Kịch bản dòng dữ liệu khuyết tật liên tục}{65}{subsection.4.1.3}%
+\contentsline {section}{\numberline {4.2}Phân tích và Đánh giá Kết quả Thực nghiệm}{68}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Đánh giá khả năng thích ứng với dịch chuyển khái niệm}{69}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}Phân tích độ ổn định cấu trúc và hiện tượng quên thảm họa}{70}{subsection.4.2.2}%
+\contentsline {subsection}{\numberline {4.2.3}Đánh giá thời gian thực thi và tốc độ xử lý}{73}{subsection.4.2.3}%
+\contentsline {subsection}{\numberline {4.2.4}Phân tích trực quan hóa phân cụm lỗi màn hình}{73}{subsection.4.2.4}%
+\contentsline {subsection}{\numberline {4.2.5}Tổng hợp kết quả so sánh định lượng}{77}{subsection.4.2.5}%
+\contentsline {section}{\numberline {4.3}Thảo luận Kết quả và Đóng góp của Nghiên cứu}{77}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Thảo luận về hiệu năng hệ thống và tính hợp nhất cấu trúc}{78}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Đóng góp khoa học và ý nghĩa ứng dụng thực tiễn}{78}{subsection.4.3.2}%
+\contentsline {section}{Kết luận Chương 4}{79}{section*.38}%
+\contentsline {chapter}{Kết luận}{81}{chapter*.39}%
+\contentsline {chapter}{Tài liệu tham khảo}{83}{section*.40}%

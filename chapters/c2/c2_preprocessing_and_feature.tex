@@ -1,0 +1,122 @@
+\section{Tổng quan về Xử lý ảnh và Trích chọn đặc trưng}
+
+Xử lý ảnh và trích chọn đặc trưng đóng vai trò tiền đề trong hệ thống thị giác máy tính phục vụ kiểm tra chất lượng sản phẩm công nghiệp. Trong bài toán kiểm định màn hình điện thoại, dữ liệu hình ảnh thu nhận thường chứa đựng sự biến đổi phức tạp về độ sáng, kết cấu bề mặt và các dạng khuyết tật có kích thước siêu nhỏ. Việc xây dựng một không gian biểu diễn dữ liệu tối ưu giúp làm nổi bật các tín hiệu bất thường, tạo điều kiện thuận lợi cho các mô hình học máy ở giai đoạn sau thực hiện phân loại và phân cụm chính xác. Mục này tập trung hệ thống hóa các nguyên lý cơ bản về biểu diễn ảnh số, lý thuyết thông tin Shannon và phương pháp tính toán entropy cục bộ trong phân tích kết cấu bề mặt màn hình.
+
+\subsection{Biểu diễn ảnh số và Không gian mức xám}
+
+Biểu diễn ảnh số là quá trình rời rạc hóa tín hiệu quang học liên tục thành ma trận các giá trị số trong không gian hai chiều \cite{gonzalez2018digital}. Trong không gian mức xám, mỗi điểm ảnh được đặc trưng bởi một giá trị cường độ sáng nằm trong khoảng xác định, thông thường là từ giá trị không đến hai trăm năm mươi lăm đối với định dạng tám bit. Cấu trúc ma trận ảnh $I$ có kích thước chiều cao $H$ và chiều rộng $W$ được mô tả toán học thông qua Công thức \ref{eq:image_matrix}:
+
+\begin{equation}
+I(x,y) \in [0, L-1], \quad \forall x \in \{1, 2, \dots, H\}, \quad y \in \{1, 2, \dots, W\}
+\label{eq:image_matrix}
+\end{equation}
+
+Trong Công thức \ref{eq:image_matrix}, ký hiệu $I(x,y)$ đại diện cho cường độ sáng của điểm ảnh tại tọa độ hàng $x$ và cột $y$, $H$ là số lượng hàng của ma trận ảnh, $W$ là số lượng cột của ma trận ảnh, và $L$ đại diện cho số lượng mức xám tối đa của hệ thống rời rạc hóa.
+
+Đối với hệ thống kiểm tra màn hình điện thoại, việc chỉ sử dụng dữ liệu mức xám hoặc dữ liệu màu ba kênh truyền thống thường gặp hạn chế khi xuất hiện các lỗi có độ tương phản thấp. Các khuyết tật như đốm tròn mờ, hạt bụi nhỏ hoặc vùng phân bố độ sáng không đều thường hòa lẫn vào kết cấu nền của màn hình. Để giải quyết thách thức này, phương pháp đề xuất mở rộng cấu trúc biểu diễn dữ liệu bằng cách bổ sung một kênh thông tin thứ tư chứa đặc trưng entropy cục bộ, tạo thành một tensor dữ liệu bốn kênh với cấu trúc $I_{\text{ext}} \in \mathbb{R}^{H \times W \times 4}$. Việc kết hợp ba kênh màu cơ bản hoặc kênh mức xám cùng kênh entropy giúp hệ thống duy trì đầy đủ thông tin hình thái hình học đồng thời tăng cường độ nhạy đối với các biến đổi kết cấu bất thường.
+
+Cấu trúc biểu diễn của tensor dữ liệu mở rộng được mô tả trực quan thông qua Hình \ref{fig:four_channel_structure}.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[every node/.style={transform shape, font=\normalsize}]
+    % Channel 1
+    \draw[fill=red!10, draw=red!60, thick] (0,0) -- (4,0) -- (4,3) -- (0,3) -- cycle;
+    \node at (2,0.5) {Kênh Red};
+    
+    % Channel 2
+    \draw[fill=green!15, draw=green!60, thick] (1,1) -- (5,1) -- (5,4) -- (1,4) -- cycle;
+    \node at (3,1.5) {Kênh Green};
+    
+    % Channel 3
+    \draw[fill=blue!20, draw=blue!60, thick] (2,2) -- (6,2) -- (6,5) -- (2,5) -- cycle;
+    \node at (4,2.5) {Kênh Blue};
+    
+    % Channel 4 (Entropy)
+    \draw[fill=teal!25, draw=teal!80, ultra thick] (3,3) -- (7,3) -- (7,6) -- (3,6) -- cycle;
+    \node[align=center] at (5,4.5) {Kênh Entropy\\cục bộ\\\textit{(Kênh bổ sung)}};
+    
+    % Annotations
+    \draw[->, thick, black] (7, 4.5) -- (9, 4.5) node[right, font=\normalsize] {Tensor đầu vào $H \times W \times 4$};
+\end{tikzpicture}
+\caption{Cấu trúc tensor dữ liệu bốn kênh kết hợp kênh màu và kênh entropy cục bộ.}
+\label{fig:four_channel_structure}
+\end{figure}
+
+Trong Hình \ref{fig:four_channel_structure}, ba lớp đệm phía dưới thể hiện các kênh biểu diễn hình ảnh thông thường, trong khi lớp đệm phía trên được tô màu khác biệt đại diện cho kênh entropy cục bộ được trích xuất từ bề mặt màn hình. Sự tích hợp này đảm bảo toàn bộ thông tin không gian và thông tin thống kê biến động được truyền tải đồng thời vào các mạng nơ-ron phía sau.
+
+\subsection{Lý thuyết thông tin và Shannon Entropy}
+
+Lý thuyết thông tin do Claude Shannon đề xuất cung cấp khuôn khổ toán học định lượng độ hỗn loạn và lượng thông tin chứa đựng trong một nguồn phát ngẫu nhiên \cite{shannon1948mathematical}. Trong lĩnh vực xử lý ảnh số, một bức ảnh hoặc một vùng ảnh có thể xem là một nguồn phát thông tin rời rạc, trong đó các giá trị mức xám của điểm ảnh đại diện cho các trạng thái có thể xảy ra của biến ngẫu nhiên. Công thức tính Shannon Entropy được xác định theo Công thức \ref{eq:shannon_entropy}:
+
+\begin{equation}
+H(X) = -\sum_{i=1}^{N} P(x_i) \log_2 P(x_i)
+\label{eq:shannon_entropy}
+\end{equation}
+
+Trong Công thức \ref{eq:shannon_entropy}, ký hiệu $H(X)$ thể hiện giá trị entropy của biến ngẫu nhiên rời rạc $X$, $x_i$ đại diện cho trạng thái thứ $i$ trong tập hợp các trạng thái có thể xảy ra, $P(x_i)$ là xác suất xuất hiện của trạng thái $x_i$, và $N$ thể hiện tổng số lượng trạng thái phân biệt của biến ngẫu nhiên $X$. Cơ số hai của phép toán lôgarit quy định đơn vị đo lượng thông tin tính bằng bit.
+
+Khi áp dụng vào ảnh số, xác suất $P(r_k)$ của một mức xám $r_k$ được ước lượng thông qua biểu đồ tần suất không gian của toàn bộ bức ảnh hoặc cửa sổ xét duyệt. Công thức xác định xác suất $P(r_k)$ được thể hiện trong Công thức \ref{eq:histogram_probability}:
+
+\begin{equation}
+P(r_k) = \frac{n_k}{M \cdot N_w}
+\label{eq:histogram_probability}
+\end{equation}
+
+Trong Công thức \ref{eq:histogram_probability}, ký hiệu $n_k$ đại diện cho số lượng điểm ảnh có mức xám bằng $r_k$, $M$ thể hiện chiều cao tính bằng điểm ảnh của vùng ảnh xét duyệt, và $N_w$ đại diện cho chiều rộng tính bằng điểm ảnh của vùng ảnh xét duyệt. Tích số giữa $M$ và $N_w$ thể hiện tổng số điểm ảnh chứa trong vùng không gian đang phân tích.
+
+Giá trị Shannon Entropy đạt giá trị cực đại khi tất cả các mức xám trong vùng xét duyệt có xác suất xuất hiện đồng đều, phản ánh một vùng bề mặt có mức độ hỗn loạn cao hoặc chứa cấu trúc dữ liệu phức tạp. Ngược lại, nếu vùng ảnh hoàn toàn đồng nhất về mức xám, xác suất của mức xám đó bằng một và xác suất các mức xám khác bằng không, dẫn đến giá trị entropy bằng không. Tính chất này tạo tiền đề quan trọng cho việc phân biệt giữa vùng màn hình hiển thị bình thường và các vùng bị lỗi bề mặt.
+
+\subsection{Entropy cục bộ trong phân tích kết cấu}
+
+Mặc dù Shannon Entropy toàn cục cung cấp chỉ số đánh giá tổng quan về độ hỗn loạn của toàn bộ bức ảnh, chỉ số này không thể định vị được vị trí không gian của các biến đổi bất thường cục bộ \cite{haralick1973textural}. Phân tích kết cấu dựa trên entropy cục bộ giải quyết hạn chế này bằng cách áp dụng kỹ thuật cửa sổ trượt quét qua từng điểm ảnh trên ma trận hình ảnh. Tại mỗi vị trí điểm ảnh $(x,y)$, một vùng lân cận kích thước $w \times w$ được khởi tạo để tính toán giá trị phân bố xác suất xám nội vùng.
+
+Công thức xác định entropy cục bộ tại tọa độ $(x,y)$ được biểu diễn chi tiết qua Công thức \ref{eq:local_entropy}:
+
+\begin{equation}
+H_{\text{local}}(x,y) = -\sum_{k=0}^{L-1} P_{W_{x,y}}(k) \log_2 \left( P_{W_{x,y}}(k) + \epsilon \right)
+\label{eq:local_entropy}
+\end{equation}
+
+Trong Công thức \ref{eq:local_entropy}, ký hiệu $H_{\text{local}}(x,y)$ đại diện cho giá trị entropy cục bộ được gán cho điểm ảnh trung tâm tại tọa độ $(x,y)$, $W_{x,y}$ thể hiện ma trận cửa sổ trượt kích thước $w \times w$ nhận điểm ảnh $(x,y)$ làm tâm, $P_{W_{x,y}}(k)$ là xác suất xuất hiện của mức xám $k$ tính riêng trong phạm vi cửa sổ $W_{x,y}$, $L$ đại diện cho tổng số mức xám của hình ảnh, và $\epsilon$ là một hằng số dương siêu nhỏ được thêm vào nhằm tránh lỗi toán học khi tính lôgarit của giá trị không.
+
+Quy trình trượt cửa sổ và chuyển đổi giá trị mức xám thành bản đồ entropy cục bộ được minh họa rõ ràng trong Hình \ref{fig:local_entropy_pipeline}.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[every node/.style={transform shape, font=\normalsize}]
+    % Input Image Grid (dịch sang trái 0.5)
+    \draw[step=0.5cm, gray!40, thin] (-0.5,0) grid (3,3.5);
+    \draw[black, thick] (-0.5,0) rectangle (3,3.5);
+    \node[above, font=\normalsize] at (1.25,3.5) {Ma trận ảnh mức xám $I$};
+    
+    % Sliding Window
+    \draw[fill=gray!30, draw=gray!80, thick] (0.5,1.5) rectangle (2,3);
+    \node[font=\normalsize] at (1.25,2.25) {$W_{x,y}$};
+    
+    % Arrow to Calculation (dịch theo)
+    \draw[->, thick, gray] (3.2, 1.75) -- (6.3, 1.75);
+    \node[above, font=\normalsize] at (4.75,1.75) {Tính $P_{W}(k)$};
+    
+    % Output Entropy Map Grid (dịch sang phải thêm 1 đơn vị)
+    \draw[step=0.5cm, gray!40, thin] (6.5,0) grid (10,3.5);
+    \draw[black, thick] (6.5,0) rectangle (10,3.5);
+    \node[above, font=\normalsize] at (8.25,3.5) {Bản đồ Entropy cục bộ};
+    
+    % Output Pixel Highlight
+    \draw[fill=teal!40, draw=teal!90, thick] (8,2) rectangle (8.5,2.5);
+\end{tikzpicture}
+\caption{Quy trình tính toán bản đồ entropy cục bộ thông qua cửa sổ trượt lân cận.}
+\label{fig:local_entropy_pipeline}
+\end{figure}
+
+
+
+Trong Hình \ref{fig:local_entropy_pipeline}, cửa sổ trượt $W_{x,y}$ di chuyển lần lượt qua từng vị trí trên ma trận ảnh gốc $I$. Giá trị entropy tính toán từ cửa sổ này được gán trực tiếp vào vị trí tương ứng trên bản đồ entropy cục bộ, tạo ra một ma trận hai chiều có cùng kích thước không gian với ảnh gốc.
+
+Đối với bài toán kiểm tra lỗi màn hình điện thoại, sự hiện diện của các đốm tròn, vệt loang, nứt vỡ hoặc điểm chết màn hình sẽ làm đứt gãy tính đồng nhất của mô hình kết cấu xung quanh. Việc áp dụng tính toán entropy cục bộ mang lại ba ưu thế kĩ thuật quan trọng:
+(i) tăng cường độ nổi bật của các đường biên và các chi tiết bất thường bất kể mức xám tuyệt đối của vùng lỗi;
+(ii) giảm thiểu sự phụ thuộc vào điều kiện chiếu sáng không đều trên bề mặt hiển thị của sản phẩm;
+(iii) chuẩn hóa thông tin nhiễu nền, giúp các mạng nơ-ron tự động nén đặc trưng thu nhận được tín hiệu lỗi một cách tập trung.
+
+Bản đồ entropy cục bộ thu được sau quá trình biến đổi này được kết hợp trực tiếp vào ma trận ảnh ban đầu để tạo thành kênh thông tin thứ tư. Kênh dữ liệu bổ sung này giữ vai trò là thành phần định hướng không gian, giúp mô hình Autoencoder trong Pha một nén dữ liệu chính xác và giúp mô hình ResNet trong Pha hai trích xuất các đặc trưng hình thái sắc nét hơn đối với các dạng lỗi bề mặt phức tạp.

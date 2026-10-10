@@ -1,0 +1,123 @@
+\section{Mô hình phát hiện bất thường ngoại tuyến}
+\label{sec:mo_hinh_bat_thuong_ngoai_tuyen}
+
+Pha phát hiện bất thường ngoại tuyến đóng vai trò sàng lọc toàn bộ các sản phẩm màn hình điện thoại đạt tiêu chuẩn chất lượng trước khi đưa dữ liệu nghi ngờ vào chuỗi xử lý phức tạp ở pha tiếp theo. Việc xây dựng một mô hình đại diện chính xác cho phân bố của sản phẩm không khuyết tật giúp hệ thống tối ưu hóa tài nguyên tính toán và giảm thiểu tỷ lệ báo động giả. Cơ chế này dựa trên sự kết hợp giữa khả năng nén đặc trưng của mạng mã hóa tự động và năng lực học tô-pô không gian của Mạng khí Nơ-ron tăng trưởng.
+
+\subsection{Huấn luyện GNG ngoại tuyến trên không gian tiềm ẩn}
+\label{subsec:huan_luyen_gng_ngoai_tuyen}
+
+Mạng khí nơ-ron tăng trưởng ngoại tuyến được xây dựng nhằm mô phỏng chính xác cấu trúc hình học của không gian đặc trưng biểu diễn bề mặt sản phẩm đạt chuẩn. Tập hợp các vectơ tiềm ẩn thu được từ đầu ra của mạng mã hóa tự động ở Mục \ref{subsec:autoencoder} đóng vai trò là dữ liệu đầu vào cho quá trình huấn luyện. Thông qua thuật toán cạnh tranh không giám sát, mạng tự động điều chỉnh vị trí các nút và thiết lập các liên kết cạnh nhằm bao phủ toàn bộ vùng dữ liệu chuẩn trong không gian tiềm ẩn \cite{fritzke1995growing}.
+
+Quá trình cập nhật vị trí nút chiến thắng và các nút lân cận trực tiếp trong mạng khí nơ-ron tăng trưởng được thực hiện theo nguyên lý học cạnh tranh \cite{martinetz1993neural}. Đối với mỗi vectơ tiềm ẩn đầu vào $z$, nút chiến thắng thứ nhất $s_1$ có khoảng cách Euclid nhỏ nhất đến $z$ và nút chiến thắng thứ hai $s_2$ được xác định. Vectơ trọng số của nút $s_1$ được cập nhật theo Công thức \ref{eq:gng_update_winner}:
+\begin{equation}
+\label{eq:gng_update_winner}
+\Delta w_{s_1} = \epsilon_b (z - w_{s_1})
+\end{equation}
+trong đó $z$ đại diện cho vectơ tiềm ẩn đầu vào, $w_{s_1}$ biểu diễn vectơ trọng số của nút chiến thắng thứ nhất $s_1$, và $\epsilon_b$ là tốc độ học của nút chiến thắng. Đồng thời, vectơ trọng số của các nút $n$ thuộc tập hợp lân cận trực tiếp $N_{s_1}$ của nút $s_1$ được điều chỉnh theo Công thức \ref{eq:gng_update_neighbor}:
+\begin{equation}
+\label{eq:gng_update_neighbor}
+\Delta w_n = \epsilon_n (z - w_n) \quad \forall n \in N_{s_1}
+\end{equation}
+trong đó $w_n$ biểu diễn vectơ trọng số của nút lân cận $n$, $N_{s_1}$ là tập hợp các nút có liên kết cạnh trực tiếp với nút $s_1$, và $\epsilon_n$ đại diện cho tốc độ học của các nút lân cận.
+
+Sự tích lũy lỗi cục bộ tại từng nút quyết định việc bổ sung nút mới vào cấu trúc mạng sau một số chu kỳ huấn luyện định kỳ. Lỗi tích lũy $A_{s_1}$ của nút chiến thắng $s_1$ được cập nhật theo Công thức \ref{eq:gng_error_accum}:
+\begin{equation}
+\label{eq:gng_error_accum}
+A_{s_1} \leftarrow A_{s_1} + \| z - w_{s_1} \|_2^2
+\end{equation}
+trong đó $A_{s_1}$ đại diện cho giá trị lỗi tích lũy của nút $s_1$, $z$ là vectơ tiềm ẩn hiện tại, $w_{s_1}$ là vectơ trọng số của nút $s_1$, và $\| \cdot \|_2$ thể hiện chuẩn Euclid hai. Quá trình gia tăng số lượng nút dừng lại khi mạng đạt đến số lượng nút tối đa quy định trước hoặc khi sai số tái tạo toàn cục đạt trạng thái ổn định.
+
+Mô hình phân bố dữ liệu chuẩn thu được sau quá trình huấn luyện ngoại tuyến hình thành nên một đồ thị phác họa vùng không gian an toàn của sản phẩm không lỗi. Sơ đồ minh họa quá trình phân tách vùng dữ liệu chuẩn và xác định điểm bất thường trên không gian tiềm ẩn được thể hiện trong Hình \ref{fig:gng_manifold}.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[font=\normalsize, >=stealth]
+    % 1. Miền không gian tiềm ẩn chuẩn Z_good
+    \path[fill=blue!5, draw=blue!30, dashed, thick, rounded corners=20pt] 
+        (-0.6,-0.6) rectangle (5.8,3.6);
+    \node[black, font=\normalsize] at (2.6,4.3) {Miền không gian tiềm ẩn chuẩn ($Z_{\text{good}}$)};
+
+    % 2. Tọa độ các nút GNG
+    \coordinate (N1) at (0.5,0.6);
+    \coordinate (N2) at (1.8,1.0); % s2
+    \coordinate (N3) at (1.4,2.3); % s1 (Winner)
+    \coordinate (N4) at (3.3,0.8);
+    \coordinate (N5) at (3.6,2.3); % Neighbor of s1
+    \coordinate (N6) at (4.8,1.4);
+
+    % 3. Ranh giới quyết định (bao quanh các nút với bán kính mu + 3*sigma)
+    \draw[red!70!black, dotted, line width=1pt, fill=red!5, fill opacity=0.3] 
+        plot[smooth cycle, tension=0.6] coordinates {
+            (-0.2,0.5) (0.8,2.7) (3.8,2.8) (5.3,1.5) (3.8,0.3) (0.8,0.2)
+        };
+    \node[black, font=\small, align=center] at (4.6,-0.3) {Ranh giới an toàn\\$\mu + 3\sigma$ ($T_{\text{pha1}}$)};
+
+    % 4. Các cạnh nối GNG
+    \draw[black!70, thick] (N1) -- (N2);
+    \draw[black!70, thick] (N1) -- (N3);
+    \draw[black!70, thick] (N2) -- (N3);
+    \draw[black!70, thick] (N2) -- (N4);
+    \draw[black!70, thick] (N3) -- (N5);
+    \draw[black!70, thick] (N4) -- (N5);
+    \draw[black!70, thick] (N4) -- (N6);
+    \draw[black!70, thick] (N5) -- (N6);
+
+    % 5. Vẽ các nút GNG thông thường
+    \foreach \p in {N1,N4,N6}
+        \fill[blue!70!black] (\p) circle (3pt);
+
+    % Nút chiến thắng s1 và s2, lân cận N5
+    \fill[orange!90!black] (N3) circle (3.5pt) node[above, xshift=3mm, font=\scriptsize, black] {$s_1$ (Winner)};
+    \fill[black] (N2) circle (3pt) node[below, font=\scriptsize] {$s_2$};
+    \fill[black] (N5) circle (3pt) node[above, font=\scriptsize] {$n \in N_{s_1}$};
+
+    % 6. Mẫu dữ liệu bình thường z_normal
+    \coordinate (Zn) at (2.2,1.8);
+    \fill[black] (Zn) circle (2.5pt);
+    \draw[->, thick, black] (Zn) -- (N3) 
+        node[midway, above, xshift=7mm, yshift=-2mm, align=center] {$\scriptstyle d \le \mu+3\sigma$};
+    \node[below, black, font=\small] at (2.3,1.7) {$z_{\text{normal}}$};
+
+    % 7. Mẫu dữ liệu bất thường z_anomaly
+    \coordinate (Za) at (7.8,2.5);
+    \fill[black] (Za) circle (2.5pt);
+    \draw[->, thick, black, dashed] (Za) -- (N5) 
+        node[midway, above right, align=center, text=black] {$\scriptstyle d \le \mu+3\sigma$};
+    \node[above right, black, font=\small] at (Za) {$z_{\text{anomaly}}$ (Bất thường)};
+
+\end{tikzpicture}
+\caption{Mô phỏng không gian tiềm ẩn chuẩn với cấu trúc đồ thị Mạng khí Nơ-ron tăng trưởng ngoại tuyến và cơ chế xác định mẫu bất thường dựa trên khoảng cách ngưỡng $\mu + 3\sigma$.}
+\label{fig:gng_manifold}
+\end{figure}
+
+\subsection{Cơ chế phân loại bất thường dựa trên khoảng cách ngưỡng ba lần độ lệch chuẩn}
+\label{subsec:phan_loai_bat_thuong_3sigma}
+
+Cơ chế phân loại bất thường dựa trên nguyên lý đo lường sự độ lệch của biểu diễn không gian ẩn từ mẫu đầu vào so với cấu trúc đồ thị của mô hình Mạng khí Nơ-ron tăng trưởng ngoại tuyến. Khi hình ảnh bề mặt màn hình điện thoại được đưa vào hệ thống, véc-tơ biểu diễn ẩn $z_x$ của mẫu ảnh đó sẽ được trích xuất thông qua mạng mã hóa tự động. Khoảng cách Euclid nhỏ nhất từ véc-tơ ẩn $z_x$ tới tập hợp các véc-tơ trọng số trong đồ thị Mạng khí Nơ-ron tăng trưởng ngoại tuyến được tính toán theo Công thức \ref{eq:min_distance}:
+\begin{equation}
+\label{eq:min_distance}
+d(z_x) = \min_{i \in V} \| z_x - w_i \|_2
+\end{equation}
+Trong Công thức \ref{eq:min_distance}, ký hiệu $d(z_x)$ đại diện cho khoảng cách nhỏ nhất từ mẫu kiểm thử $z_x$ đến đồ thị mạng, ký hiệu $V$ biểu diễn tập hợp chỉ số các nút thuộc mạng, ký hiệu $w_i$ thể hiện véc-tơ trọng số của nút thứ $i$, và ký hiệu $\| \cdot \|_2$ đại diện cho chuẩn Euclid cấp hai.
+
+Cơ sở lý thuyết của việc định giá trị ngưỡng phân định bất thường xuất phát từ mối liên hệ giữa khoảng cách biểu diễn không gian và xác suất thuộc về phân phối của tập sản phẩm đạt chuẩn \cite{pukelsheim1994three, nist2012ehandbook}. Giá trị khoảng cách $d(z_x)$ từ véc-tơ đầu vào $z_x$ đến nút gần nhất càng lớn phản ảnh mẫu dữ liệu càng nằm xa vùng phân phối của dữ liệu đạt chất lượng đã được mô hình học trước đó. Giả định chuỗi khoảng cách cực tiểu của các mẫu đạt tiêu chuẩn tuân theo phân phối chuẩn, khoảng khoảng cách $\mu_d \pm 3\sigma_d$ bao phủ $99{,}73\%$ số lượng mẫu dữ liệu bình thường theo tiêu chuẩn thống kê \cite{nist2012ehandbook}. Do đó, bất kỳ mẫu sản phẩm nào có khoảng cách vượt quá ngưỡng trên sẽ được hệ thống gán nhãn là mẫu bất thường với độ tin cậy cao.
+
+Để thiết lập ngưỡng phân định $T_{pha1}$ một cách tự động, hệ thống sử dụng tập kiểm định độc lập gồm các mẫu sản phẩm không chứa khuyết tật. Các thông số thống kê bao gồm giá trị trung bình và độ lệch chuẩn của chuỗi khoảng cách cực tiểu trên tập kiểm định được xác định lần lượt thông qua Công thức \ref{eq:mean_distance2} và Công thức \ref{eq:std_distance2}:
+\begin{equation}
+\label{eq:mean_distance2}
+\mu_d = \frac{1}{K} \sum_{j=1}^{K} d(z_j^{val})
+\end{equation}
+\begin{equation}
+\label{eq:std_distance2}
+\sigma_d = \sqrt{\frac{1}{K-1} \sum_{j=1}^{K} \left( d(z_j^{val}) - \mu_d \right)^2}
+\end{equation}
+Trong Công thức \ref{eq:mean_distance2} và Công thức \ref{eq:std_distance2}, ký hiệu $K$ đại diện cho tổng số lượng mẫu kiểm định đạt chuẩn, ký hiệu $z_j^{val}$ biểu diễn véc-tơ ẩn của mẫu kiểm định thứ $j$, ký hiệu $\mu_d$ thể hiện giá trị trung bình mẫu của khoảng cách, và ký hiệu $\sigma_d$ đại diện cho độ lệch chuẩn mẫu.
+
+Quy tắc xác định ngưỡng phân loại bất thường $T_{pha1}$ được thiết lập theo nguyên lý ba lần độ lệch chuẩn thể hiện trong Công thức \ref{eq:threshold_3sigma}:
+\begin{equation}
+\label{eq:threshold_3sigma}
+T_{pha1} = \mu_d + 3 \sigma_d
+\end{equation}
+Trong Công thức \ref{eq:threshold_3sigma}, ký hiệu $T_{pha1}$ đóng vai trò là ngưỡng khoảng cách tối đa chấp nhận được đối với một sản phẩm đạt chuẩn.
+
+Tiến trình ra quyết định kiểm tra chất lượng đối với một mẫu ảnh đầu vào được thực hiện phân định qua hai trường hợp cụ thể: (i) nếu khoảng cách $d(z_x) \le T_{pha1}$, mẫu dữ liệu được kết luận là sản phẩm đạt chuẩn và hệ thống kết thúc tiến trình xử lý đối với mẫu này, và (ii) nếu khoảng cách $d(z_x) > T_{pha1}$, mẫu dữ liệu bị xác định là bất thường và được chuyển tiếp sang Pha 2 để thực hiện phân tích đặc trưng và phân cụm trực tuyến. Cơ chế này đảm bảo chỉ những hình ảnh thực sự chứa khuyết tật mới đi vào tiến trình phân cụm trực tuyến, giúp tối ưu hóa chi phí tính toán và duy trì tốc độ vận hành cho toàn hệ thống.

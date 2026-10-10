@@ -1,0 +1,80 @@
+\section{Kiến trúc tổng thể hệ thống đề xuất}
+\label{sec:kientruc_tongthe}
+
+Hệ thống đề xuất được cấu trúc thành hai pha xử lý nối tiếp nhằm giải quyết triệt để bài toán phát hiện bất thường và phân cụm khuyết tật thời gian thực trên màn hình điện thoại. Pha 1 đảm nhận vai trò lọc bỏ các mẫu sản phẩm đạt chuẩn thông qua mô hình phát hiện bất thường ngoại tuyến, giúp giảm tải khối lượng tính toán cho hệ thống. Pha 2 tập trung phân tích hình thái khuyết tật và thực hiện phân cụm tự động bằng thuật toán Mạng khí Nơ-ron tăng trưởng tích lũy bằng chứng. Sự kết hợp giữa xử lý dữ liệu đa kênh và trích xuất đặc trưng chuyên biệt giữa hai pha tạo nên một quy trình khép kín, đảm bảo độ chính xác và tính thích nghi cao trong môi trường sản xuất công nghiệp. Sơ đồ khối tổng thể của hệ thống được trình bày chi tiết trong Hình \ref{fig:kientruc_tongthe}.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=1.2cm and 0.5cm,
+    block/.style={draw=black!80, fill=blue!5, rectangle, rounded corners=2pt, minimum width=1.7cm, minimum height=1.0cm, align=center, font=\normalsize},
+    phase/.style={draw=black!60, fill=gray!10, rectangle, dashed, inner sep=6pt},
+    arrow/.style={->, >=stealth, thick, color=black!80},
+    font=\small
+]
+
+% Phase 1 Nodes
+\node [block] (input1) {Ảnh RGB\\đạt chuẩn};
+\node [block, right=of input1] (entropy1) {Tính toán\\Entropy};
+\node [block, right=of entropy1] (ae) {Mạng mã hóa\\tự động};
+\node [block, right=of ae] (gng_off) {Mạng GNG\\ngoại tuyến};
+\node [block, right=of gng_off] (check3s) {Kiểm tra\\ngưỡng $3\sigma$};
+
+% Phase 2 Nodes
+\node [block, below=1.8cm of check3s] (resnet) {Mạng ResNet\\bốn kênh};
+\node [block, left=of resnet] (eagng) {Thuật toán\\EAGNG};
+\node [block, left=of eagng] (cc) {Thành phần\\liên kết};
+\node [block, left=of cc] (output) {Phân loại\\cụm lỗi};
+
+% Arrows Phase 1
+\draw [arrow] (input1) -- (entropy1);
+\draw [arrow] (entropy1) -- (ae);
+\draw [arrow] (ae) -- (gng_off);
+\draw [arrow] (gng_off) -- (check3s);
+
+% Decision & Transition
+\draw [arrow] (check3s) -- node[left, font=\small] {Bất thường ($>3\sigma$)} (resnet);
+
+% Arrows Phase 2
+\draw [arrow] (resnet) -- (eagng);
+\draw [arrow] (eagng) -- (cc);
+\draw [arrow] (cc) -- (output);
+
+% Background Phases
+\begin{scope}[on background layer]
+    \node [phase, fit=(input1) (check3s), label={above:\small Pha 1: Phát hiện bất thường ngoại tuyến}] (p1) {};
+    \node [phase, fit=(resnet) (output), label={below:\small Pha 2: Phân cụm lỗi thích nghi trực tuyến bằng thuật toán EAGNG}] (p2) {};
+\end{scope}
+
+\end{tikzpicture}
+\caption{Sơ đồ kiến trúc tổng thể hai pha của hệ thống tự động phân loại khuyết tật màn hình điện thoại.}
+\label{fig:kientruc_tongthe}
+\end{figure}
+
+\subsection{Pha 1: Phát hiện bất thường ngoại tuyến}
+\label{subsec:pha1_overview}
+
+Pha phát hiện bất thường ngoại tuyến có mục tiêu thiết lập mô hình biểu diễn phân bố của sản phẩm đạt tiêu chuẩn chất lượng. Quy trình khởi đầu bằng việc thu thập tập hợp các hình ảnh màn hình điện thoại không chứa khuyết tật từ dây chuyền sản xuất. Mỗi hình ảnh đầu vào ban đầu được tính toán bản đồ entropy cục bộ để ghi nhận thông tin về độ phức tạp bề mặt và được ghép nối trực tiếp thành kênh dữ liệu thứ tư. Mạng mã hóa tự động tiếp nhận dữ liệu bốn kênh này nhằm thực hiện nén dữ liệu và thu gọn không gian biểu diễn về một không gian tiềm ẩn có kích thước nhỏ hơn \cite{hinton2006reducing}.
+
+Mô hình Mạng khí Nơ-ron tăng trưởng ngoại tuyến được huấn luyện trực tiếp trên tập hợp các vectơ tiềm ẩn thu được từ mạng mã hóa tự động. Quá trình huấn luyện này giúp Mạng khí Nơ-ron tăng trưởng học được cấu trúc không gian của dữ liệu chuẩn và hình thành bộ nút đại diện cho phân bố dữ liệu không lỗi. Khi một hình ảnh mới được đưa vào kiểm tra, vectơ tiềm ẩn của hình ảnh đó sẽ được tính toán khoảng cách Euclid tới nút gần nhất trong Mạng khí Nơ-ron tăng trưởng.
+
+Việc quyết định một mẫu dữ liệu có chứa khuyết tật hay không dựa trên quy tắc thống kê ba lần độ lệch chuẩn. Khoảng cách Euclid cực tiểu $d_{min}(z)$ từ vectơ tiềm ẩn $z$ tới tập hợp các nút trong Mạng khí Nơ-ron tăng trưởng được xác định theo Công thức \ref{eq:distance_p1}:
+\begin{equation}
+\label{eq:distance_p1}
+d_{min}(z) = \min_{i \in V} \| z - w_i \|_2
+\end{equation}
+trong đó $z$ đại diện cho vectơ tiềm ẩn thu được từ không gian ẩn của mạng mã hóa tự động, $V$ biểu diễn tập hợp các nút trong đồ thị nơ-ron khí tăng trưởng ngoại tuyến, $w_i$ là vectơ trọng số của nút thứ $i$ trong tập hợp $V$, và $\| \cdot \|_2$ thể hiện chuẩn Euclid hai. Ngưỡng quyết định bất thường $T_{pha1}$ được thiết lập theo Công thức \ref{eq:threshold_p1}:
+\begin{equation}
+\label{eq:threshold_p1}
+T_{pha1} = \mu_d + 3 \sigma_d
+\end{equation}
+trong đó $\mu_d$ biểu diễn giá trị trung bình của khoảng cách cực tiểu trên tập dữ liệu huấn luyện chuẩn, và $\sigma_d$ đại diện cho độ lệch chuẩn tương ứng của chuỗi khoảng cách này. Nếu khoảng cách $d_{min}(z)$ vượt quá ngưỡng $T_{pha1}$, mẫu dữ liệu được xác định là bất thường và được chuyển sang pha 2 để thực hiện phân cụm khuyết tật.
+
+\subsection{Pha 2: Phân cụm lỗi thích nghi trực tuyến bằng thuật toán EAGNG}
+\label{subsec:pha2_overview}
+
+Pha phân cụm lỗi thích nghi trực tuyến tiếp nhận toàn bộ các mẫu hình ảnh được xác định là bất thường từ pha 1 để tiến hành phân tích sâu và phân loại cấu trúc lỗi. Không giống như pha 1 tập trung vào việc tái tạo toàn cục thông qua mạng mã hóa tự động, pha 2 sử dụng kiến trúc mạng nơ-ron tích chập ResNet điều chỉnh bốn kênh đầu vào để trích xuất các đặc trưng chú trọng đến hình thái và ranh giới khuyết tật.
+
+Vectơ đặc trưng thu được từ mạng ResNet bốn kênh được đưa trực tiếp vào mô hình Mạng khí Nơ-ron tăng trưởng tích lũy bằng chứng để tiến hành huấn luyện trực tuyến. Mạng khí Nơ-ron tăng trưởng tích lũy bằng chứng thực hiện cập nhật cấu trúc mạng một cách liên tục dựa trên bốn cơ chế cải tiến chính bao gồm: (i) suy giảm tốc độ học và tích lũy lỗi theo tuổi nút, (ii) trì hoãn chèn nút dựa trên tích lũy bằng chứng kết hợp huấn luyện cục bộ, (iii) phát triển cấu trúc nhạy mật độ nhằm kiểm soát sự bùng nổ số lượng nút, và (iv) kiểm tra sự chồng lấp hộp giới hạn để kiểm soát việc nối cạnh giữa các cụm. Các cơ chế này giúp mô hình duy trì tính ổn định cấu trúc tô-pô và tránh hiện tượng nhiễu cấu trúc khi dữ liệu xuất hiện theo dòng liên tục \cite{fritzke1995growing}.
+
+Sau khi Mạng khí Nơ-ron tăng trưởng tích lũy bằng chứng hoàn thành cập nhật trạng thái trực tuyến cho mẫu dữ liệu, thuật toán thành phần liên kết trên đồ thị được áp dụng để nhóm các nút kết nối thành các cụm khuyết tật riêng biệt. Các tập hợp nút thuộc cùng một thành phần liên kết trên đồ thị được xác định là một lớp khuyết tật cụ thể trên bề mặt màn hình điện thoại. Phương pháp phân cụm dựa trên đồ thị này giúp hệ thống tự động phát hiện các dạng lỗi mới phát sinh mà không cần biết trước số lượng cụm khuyết tật trong quá trình vận hành v.v...

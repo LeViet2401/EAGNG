@@ -1,0 +1,140 @@
+\section{Cơ sở toán học cho các cải tiến của thuật toán EAGNG}
+
+Mạng Khí nơ-ron tăng trưởng truyền thống bộc lộ những hạn chế kỹ thuật khi vận hành trong môi trường học trực tuyến, bao gồm hiện tượng bùng nổ số lượng nút tại các vùng dữ liệu có mật độ cao và nguy cơ hợp nhất sai các cụm khuyết tật do nhiễu không gian. Thuật toán EAGNG được phát triển nhằm khắc phục các tồn tại này thông qua bốn cải tiến cốt lõi dựa trên nền tảng toán học vững chắc. Mục này phân tích các nguyên lý toán học làm cơ sở cho việc điều khiển tốc độ học theo tuổi nút, cơ chế hoãn chèn nút dựa trên bằng chứng tích lũy, đánh giá mật độ không gian cục bộ và kiểm soát liên kết đồ thị bằng không gian bao hình học.
+
+\subsection{Lý thuyết suy giảm tốc độ học thích ứng theo vòng đời nút}
+
+Sự cân bằng giữa tính dẻo và tính ổn định là bài toán trung tâm trong các mô hình học liên tục và học trực tuyến \cite{grossberg1987competitive}. Trong mạng Khí nơ-ron tăng trưởng gốc, tốc độ học và mức độ tích lũy sai số của các nút nơ-ron được duy trì cố định đối với nút chiến thắng bất chấp thời gian tồn tại của nút đó trong mạng. Điều này khiến cho các nút nơ-ron đã hội tụ vững chắc vẫn bị nhiễu loạn khi xuất hiện các mẫu dữ liệu ngoại lai đơn lẻ.
+
+Thuật toán EAGNG bổ sung biến số tuổi nút $a_i \in \mathbb{N}$ cho mỗi nút $i$ trong tập hợp nút $A$. Hàm suy giảm tốc độ học thích ứng theo thời gian sống của nút được định nghĩa theo Công thức \ref{eq:age_learning_rate}:
+
+\begin{equation}
+\eta_i(a_i) = \frac{\eta_0}{1 + \alpha_a \cdot a_i}
+\label{eq:age_learning_rate}
+\end{equation}
+
+Trong Công thức \ref{eq:age_learning_rate}, ký hiệu $\eta_i(a_i)$ đại diện cho tốc độ học thích ứng của nút $i$ tại độ tuổi $a_i$, $\eta_0$ thể hiện tốc độ học khởi tạo ban đầu, và $\alpha_a$ là hệ số suy giảm theo tuổi nút nhận giá trị dương.
+
+Tương tự, mức độ tích lũy sai số $E_i$ khi tiếp nhận mẫu dữ liệu mới $x$ được điều chỉnh suy giảm theo độ trưởng thành của nút, được thể hiện trong Công thức \ref{eq:age_error_accumulation}:
+
+\begin{equation}
+\Delta E_i = \frac{\|x - w_i\|^2}{1 + \beta_a \cdot a_i}
+\label{eq:age_error_accumulation}
+\end{equation}
+
+Trong Công thức \ref{eq:age_error_accumulation}, ký hiệu $\Delta E_i$ đại diện cho giá trị gia tăng sai số tích lũy của nút $i$, $x$ thể hiện vectơ đặc trưng đầu vào, $w_i$ đại diện cho vectơ trọng số của nút $i$, $\| \cdot \|$ là phép đo khoảng cách Euclid, và $\beta_a$ là hệ số kiểm soát mức độ suy giảm tích lũy sai số.
+
+Quy luật suy giảm thích ứng này mang lại hai hiệu ứng toán học quan trọng:
+(i) các nút nơ-ron mới khởi tạo có độ tuổi nhỏ sẽ sở hữu tốc độ học cao, cho phép nhanh chóng di chuyển về trung tâm của vùng dữ liệu khuyết tật mới xuất hiện;
+(ii) các nút nơ-ron đã tồn tại qua nhiều bước học sẽ có độ tuổi lớn, dẫn đến tốc độ học và mức gia tăng sai số giảm dần, giúp bảo vệ cấu trúc tri thức đã học khỏi hiện tượng nhiễu loạn ngẫu nhiên.
+
+\subsection{Cơ chế đệm bộ nhớ và Ước lượng mật độ không gian cục bộ}
+
+Việc chèn nút mới ngay lập tức khi xuất hiện một mẫu dữ liệu nằm xa các nút hiện có khiến mạng Khí nơ-ron tăng trưởng rất nhạy cảm với nhiễu ngẫu nhiên \cite{silva2006boundary}. Thuật toán EAGNG giải quyết thách thức này bằng cách kết hợp vùng đệm bộ nhớ tích lũy bằng chứng cùng phương pháp ước lượng mật độ nhân không gian.
+
+Khi một mẫu dữ liệu đầu vào $x$ có khoảng cách tới nút chiến thắng vượt quá ngưỡng bất thường nhưng chưa đủ điều kiện tạo cấu trúc liên kết ngay, mẫu dữ liệu này được đưa vào vùng đệm bộ nhớ tạm thời $\mathcal{B} = \{x_1, x_2, \dots, x_K\}$. Mật độ dữ liệu cục bộ $D(x)$ tại điểm $x$ trong vùng đệm được ước lượng thông qua hàm nhân Gauss theo Công thức \ref{eq:kernel_density_estimation}:
+
+\begin{equation}
+D(x) = \frac{1}{K \cdot h^d} \sum_{j=1}^{K} \exp\left( -\frac{\|x - x_j\|^2}{2h^2} \right)
+\label{eq:kernel_density_estimation}
+\end{equation}
+
+Trong Công thức \ref{eq:kernel_density_estimation}, ký hiệu $D(x)$ đại diện cho giá trị ước lượng mật độ không gian cục bộ tại vị trí $x$, $K$ thể hiện số lượng mẫu dữ liệu hiện có trong vùng đệm bộ nhớ, $h$ là bán kính cửa sổ nhân Gauss, $d$ đại diện cho số chiều của không gian đặc trưng, và $x_j$ thể hiện mẫu dữ liệu thứ $j$ trong vùng đệm.
+
+Sơ đồ cơ chế hoãn chèn nút dựa trên vùng đệm bằng chứng và huấn luyện cục bộ được minh họa chi tiết trong Hình \ref{fig:evidence_buffer_mechanism}.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[
+    node distance=1.0cm and 1.5cm,
+    block/.style={rectangle, draw=black, fill=white, thick, minimum width=3.2cm, minimum height=1.4cm, align=center, font=\normalsize},
+    decision/.style={diamond, draw=black, fill=white, thick, aspect=1.8, inner sep=1pt, align=center, font=\normalsize},
+    buffer/.style={rectangle, draw=black, fill=white, thick, minimum width=3.2cm, minimum height=1.4cm, align=center, font=\normalsize},
+    train/.style={rectangle, draw=black, fill=white, thick, minimum width=3.2cm, minimum height=1.4cm, align=center, font=\normalsize},
+    myarrow/.style={->, >=Stealth, thick, black}
+]
+
+    % Định vị các khối theo chiều dọc
+    \node[block] (input) {Luồng dữ liệu\\mới $x$};
+    
+    % Khối quyết định 1
+    \node[decision, below=0.8cm of input] (dec1) {Mẫu dị biệt?\\$\|x - w_{s_1}\| > T_{p2}$\\hoặc $D(x) < D_{\text{th}}$};
+    
+    % Nhánh "Không" của dec1 (rẽ sang bên phải)
+    \node[block, right=1.2cm of dec1] (normal) {Cập nhật trọng số\\nút $s_1$ và lân cận};
+    
+    % Nhánh "Có" của dec1 (đi xuống dưới)
+    \node[buffer, below=1.2cm of dec1] (buf) {Vùng đệm $\mathcal{B}$\\\textit{(Lưu trữ mẫu $x$)}};
+    
+    % Khối quyết định 2
+    \node[decision, below=1.0cm of buf] (dec2) {Đủ bằng chứng?\\$K \ge K_{\text{min}}$};
+    
+    % Nhánh "Có" của dec2 (đi tiếp xuống dưới)
+    \node[train, below=1.2cm of dec2] (local) {Huấn luyện cục bộ\\Tạo nút \& cạnh mới};
+
+    % Vẽ mũi tên và nhãn
+    \draw[myarrow] (input) -- (dec1);
+    
+    % Nhánh dec1
+    \draw[myarrow] (dec1) -- node[midway, above] {Không} (normal);
+    \draw[myarrow] (dec1) -- node[midway, right] {Có} (buf);
+    
+    \draw[myarrow] (buf) -- (dec2);
+    
+    % Nhánh dec2
+    \draw[myarrow] (dec2) -- node[midway, right] {Có} (local);
+    
+    % Nhánh Không của dec2 (vòng sang bên trái quay lại vùng đệm B)
+    \draw[myarrow] (dec2.west) -- ++(-1.2,0) |- node[pos=0.25, left, align=center] {Không\\(Tiếp tục tích lũy)} (buf.west);
+
+\end{tikzpicture}
+\caption{Sơ đồ cơ chế tích lũy bằng chứng trong vùng đệm $\mathcal{B}$ và kích hoạt huấn luyện cục bộ.}
+\label{fig:evidence_buffer_mechanism}
+\end{figure}
+
+
+Trong Hình \ref{fig:evidence_buffer_mechanism}, các mẫu dữ liệu mới chưa đạt ngưỡng mật độ $D_{\text{th}}$ sẽ không tạo nút ngay mà được chuyển vào vùng đệm bộ nhớ $\mathcal{B}$. Quá trình huấn luyện cục bộ để sinh cấu trúc nút và cạnh nối mới chỉ được kích hoạt khi số lượng bằng chứng tích lũy $K$ đạt vượt ngưỡng tối thiểu $K_{\text{min}}$.
+
+Bên cạnh đó, để tránh hiện tượng bùng nổ số lượng nút tại các vùng đã có mật độ biểu diễn cao, thuật toán EAGNG bổ sung chỉ số kiểm tra mật độ mạng cục bộ $\rho_i$ tại nút $i$ theo Công thức \ref{eq:node_density_check}:
+
+\begin{equation}
+\rho_i = \frac{1}{|N_i|} \sum_{j \in N_i} \frac{1}{\|w_i - w_j\| + \epsilon}
+\label{eq:node_density_check}
+\end{equation}
+
+Trong Công thức \ref{eq:node_density_check}, ký hiệu $\rho_i$ đại diện cho mật độ không gian cục bộ xung quanh nút $i$, $N_i$ thể hiện tập hợp các nút lân cận có kết nối trực tiếp với nút $i$, $|N_i|$ là số lượng nút lân cận, $w_i$ và $w_j$ lần lượt là vectơ trọng số của nút $i$ và nút $j$, và $\epsilon$ là hằng số dương siêu nhỏ để tránh lỗi chia cho giá trị không.
+
+Khi nút $q$ có sai số tích lũy lớn nhất đạt điều kiện phân tách, hệ thống kiểm tra chỉ số $\rho_q$. Việc chèn nút mới chỉ diễn ra khi giá trị $\rho_q$ nhỏ hơn ngưỡng mật độ tối đa $\rho_{\text{max}}$, đảm bảo mạng duy trì mật độ nút phân bố đồng đều và tối ưu tài nguyên tính toán.
+
+\subsection{Lý thuyết hình học bao không gian trong kiểm soát liên kết đồ thị}
+
+Trong quá trình học trực tuyến, các vết khuyết tật khác nhau có thể xuất hiện gần nhau trong không gian đặc trưng. Mô hình Khí nơ-ron tăng trưởng truyền thống chỉ dựa vào khoảng cách giữa hai nút chiến thắng $s_1$ và $s_2$ để tạo cạnh nối, dẫn đến rủi ro nối nhầm các cụm khuyết tật riêng biệt thành một phân lớp duy nhất \cite{he2008graph}.
+
+Thuật toán EAGNG tích hợp cơ chế kiểm soát liên kết dựa trên lý thuyết không gian bao hình học chữ nhật song song với các trục tọa độ. Đối với mỗi cụm nơ-ron $C_m$ trong đồ thị, hình học bao không gian $B(C_m)$ được xác định bởi tập hợp các khoảng giá trị cực trị trên từng chiều không gian theo Công thức \ref{eq:bounding_box_def}:
+
+\begin{equation}
+B(C_m) = \prod_{d=1}^{D} \left[ \min_{i \in C_m} w_{i,d}, \, \max_{i \in C_m} w_{i,d} \right]
+\label{eq:bounding_box_def}
+\end{equation}
+
+Trong Công thức \ref{eq:bounding_box_def}, ký hiệu $B(C_m)$ đại diện cho hình học bao không gian của cụm thứ $m$, $D$ là tổng số chiều của không gian đặc trưng, $w_{i,d}$ thể hiện giá trị tọa độ chiều thứ $d$ của nút $i$ thuộc cụm $C_m$, và toán tử $\prod$ biểu thị tích Cartesian của các khoảng giá trị không gian.
+
+Khi xuất hiện yêu cầu tạo cạnh nối giữa nút $u \in C_m$ và nút $v \in C_n$ thuộc hai cụm phân biệt, thuật toán tiến hành tính toán thể tích vùng giao cắt $V_{\text{overlap}}$ giữa hai hình học bao $B(C_m)$ và $B(C_n)$ theo Công thức \ref{eq:bounding_box_overlap}:
+
+\begin{equation}
+V_{\text{overlap}}(C_m, C_n) = \prod_{d=1}^{D} \max\left(0, \, \min\left(w_{m,d}^{\text{max}}, w_{n,d}^{\text{max}}\right) - \max\left(w_{m,d}^{\text{min}}, w_{n,d}^{\text{min}}\right)\right)
+\label{eq:bounding_box_overlap}
+\end{equation}
+
+Trong Công thức \ref{eq:bounding_box_overlap}, ký hiệu $V_{\text{overlap}}(C_m, C_n)$ đại diện cho thể tích phần không gian chồng lấp giữa hai hình học bao, $w_{m,d}^{\text{max}}$ và $w_{m,d}^{\text{min}}$ lần lượt là giá trị tọa độ lớn nhất và nhỏ nhất theo chiều $d$ của cụm $C_m$.
+
+Tỷ lệ giao cắt không gian $R_{\text{overlap}}$ so với thể tích nhỏ hơn giữa hai không gian bao được xác định theo Công thức \ref{eq:overlap_ratio}:
+
+\begin{equation}
+R_{\text{overlap}} = \frac{V_{\text{overlap}}(C_m, C_n)}{\min\left(V(B(C_m)), \, V(B(C_n))\right)}
+\label{eq:overlap_ratio}
+\end{equation}
+
+Trong Công thức \ref{eq:overlap_ratio}, ký hiệu $R_{\text{overlap}}$ đại diện cho tỷ lệ chồng lấp không gian giữa hai cụm, và $V(B(C_m))$ thể hiện tổng thể tích không gian bao của cụm $C_m$.
+
+Quy tắc quyết định liên kết đồ thị được quy định cụ thể: nếu tỷ lệ giao cắt $R_{\text{overlap}}$ vượt quá ngưỡng cho phép $\tau_{\text{overlap}}$, hai cụm được xác nhận là thuộc cùng một vùng khuyết tật mở rộng và việc tạo cạnh nối được phê duyệt; ngược lại, nếu tỷ lệ $R_{\text{overlap}}$ nhỏ hơn ngưỡng, phép tạo cạnh nối bị từ chối nhằm duy trì sự ranh giới độc lập giữa hai dạng lỗi bề mặt. Cơ chế này đảm bảo mạng EAGNG phân cụm chính xác hình thái các vết khuyết tật phức tạp mà không bị sáp nhập sai lệch.

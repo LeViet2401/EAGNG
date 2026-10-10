@@ -1,0 +1,41 @@
+\section{Ý tưởng và hướng tiếp cận của bài toán}
+
+Ý tưởng chủ đạo của luận văn dựa trên việc chia tách quá trình kiểm tra ngoại quan thành hai pha độc lập bao gồm pha phát hiện bất thường ngoại tuyến và pha phân cụm lỗi trực tuyến. Hướng tiếp cận này giải quyết hai thách thức lớn trong kiểm tra chất lượng màn hình điện thoại bao gồm sự mất cân bằng nghiêm trọng giữa số lượng mẫu đạt chuẩn và mẫu lỗi, cùng khả năng tự thích ứng với các dạng khuyết tật mới phát sinh trong dây chuyền sản xuất \cite{goodfellow2016deep}. Trong pha thứ nhất, hệ thống tập trung xây dựng mô hình biểu diễn không gian cho các mẫu sản phẩm đạt chất lượng nhằm nhanh chóng sàng lọc và loại bỏ phần lớn dữ liệu bình thường. Trong pha thứ hai, hệ thống áp dụng cơ chế học động trực tuyến để tự động gom nhóm và phân loại các mẫu bị lỗi mà không cần gán nhãn trước \cite{fritzke1995growing}.
+
+Pha phát hiện bất thường ngoại tuyến kết hợp kỹ thuật trích xuất thông tin kết cấu không gian và mô hình học biểu diễn không giám sát. Dữ liệu ảnh đầu vào ban đầu gồm ba kênh màu chuẩn được bổ sung một kênh bản đồ entropy cục bộ \cite{shannon1948mathematical}. Việc ghép nối kênh bản đồ này tạo thành cấu trúc ảnh bốn kênh nhằm tăng cường khả năng nhận diện các vùng có sự thay đổi đột ngột về độ sáng hoặc bề mặt. Tiếp theo, mô hình mạng mã hóa tự động thực hiện nén dữ liệu ảnh bốn kênh thành các véc-tơ biểu diễn ẩn mang thông tin cốt lõi của sản phẩm đạt chuẩn. Mô hình Mạng khí Nơ-ron tăng trưởng ngoại tuyến được huấn luyện trên tập các véc-tơ biểu diễn ẩn này để thiết lập bản đồ ma trận trọng số đại diện cho phân phối dữ liệu bình thường. Một mẫu ảnh được xác định là bất thường khi véc-tơ biểu diễn ẩn tương ứng có khoảng cách không gian vượt quá ngưỡng biến động quy định so với các nút trọng số thuộc mô hình Mạng khí Nơ-ron Tăng trưởng.
+
+Pha phân cụm lỗi trực tuyến xử lý các mẫu ảnh chứa khuyết tật đã được sàng lọc từ pha thứ nhất thông qua mạng khí nơ-ron tăng trưởng. Mô hình ResNet được sử dụng để trích xuất các véc-tơ đặc trưng tập trung vào hình thái khuyết tật từ cấu trúc ảnh bốn kênh \cite{he2016deep}. Các véc-tơ đặc trưng này được truyền trực tiếp vào thuật toán Mạng khí Nơ-ron tăng trưởng Tích lũy Bằng chứng để cập nhật cấu trúc mạng theo thời gian thực. Thuật toán cải tiến tích hợp bốn cơ chế cốt lõi bao gồm (i) điều chỉnh tốc độ học và sai số tích lũy theo tuổi của nút, (ii) chèn nút muộn dựa trên vùng đệm bằng chứng và huấn luyện cục bộ, (iii) kiểm soát sự phát triển hình thái đồ thị dựa trên mật độ nút, và (iv) kiểm tra sự chồng lấp hộp giới hạn giữa các cụm để thực hiện gộp vết. Cuối cùng, thuật toán phân cụm thành phần liên thông trên đồ thị được áp dụng để xác định chính xác các nhóm lỗi riêng biệt mà không cần xác định trước số lượng cụm.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[node distance=1.5cm, auto, >=stealth,
+    block/.style={rectangle, draw, fill=white, text width=3.3cm, text centered, minimum height=1.2cm, font=\normalsize},
+    process/.style={rectangle, draw, fill=white, text width=3.3cm, text centered, minimum height=1.2cm, font=\normalsize},
+    subblock/.style={rectangle, draw, fill=white, text width=3.3cm, text centered, minimum height=1.0cm, font=\normalsize},
+    line/.style={draw, ->, thick}]
+    
+    \node [block] (input) {Ảnh màn hình RGB};
+    \node [process, right of=input, xshift=4.0cm] (entropy) {Trích xuất Entropy và tạo ảnh 4 kênh};
+    \node [process, right of=entropy, xshift=4.0cm] (ae) {Autoencoder trích xuất véc-tơ ẩn $z$};
+    \node [subblock, below of=ae, yshift=-2cm] (gng_off) {Offline GNG phát hiện bất thường};
+    
+    \node [process, below of=entropy, yshift=-2cm] (resnet) {ResNet trích xuất đặc trưng hình thái};
+    \node [subblock, left of=resnet, xshift=-4.0cm] (eagng) {Online EAGNG phân cụm lỗi thích ứng};
+    \node [block, below of=eagng, yshift=-2cm] (cluster) {Phân loại lỗi bằng thành phần liên thông};
+
+    \path [line] (input) -- (entropy);
+    \path [line] (entropy) -- (ae);
+    \path [line] (ae) -- (gng_off);
+    \path [line] (gng_off) -- node[above, font=\normalsize] {Ảnh lỗi} (resnet);
+    \path [line] (resnet) -- (eagng);
+    \path [line] (eagng) -- (cluster);
+\end{tikzpicture}
+\caption{Sơ đồ kiến trúc hướng tiếp cận hai pha trong kiểm tra và phân loại lỗi màn hình điện thoại.}
+\label{fig:huong_tiep_can}
+\end{figure}
+
+Sơ đồ kiến trúc xử lý chi tiết được mô tả cụ thể trong Hình \ref{fig:huong_tiep_can}. Luồng dữ liệu vận hành khép kín từ khâu tiếp nhận ảnh gốc ba kênh màu, tiến hành tính toán bản đồ độ hỗn loạn không gian để chuyển đổi thành cấu trúc bốn kênh, sau đó đưa qua mạng mã hóa tự động để trích xuất không gian ẩn. Khối Mạng khí Nơ-ron tăng trưởng ngoại tuyến đóng vai trò bộ lọc phân phối để loại bỏ các mẫu sản phẩm đạt chất lượng. Các mẫu ảnh vượt ngưỡng phân phối được chuyển tiếp sang khối ResNet để trích xuất đặc trưng hình thái khuyết tật, làm đầu vào cho mô hình Mạng khí Nơ-ron tăng trưởng Tích lũy Bằng chứng trực tuyến thực hiện tích lũy và điều chỉnh cấu trúc đồ thị trước khi phân loại cụ thể.
+
+Quá trình trích xuất kênh bản đồ độ hỗn loạn thông tin được thực hiện dựa trên việc đo lường mức độ biến động tần suất xuất hiện của các giá trị mức xám trong vùng lân cận cục bộ của từng điểm ảnh \cite{shannon1948mathematical}. Chỉ số này phản ánh mức độ không đồng nhất về bề mặt, giúp làm nổi bật các đốm tròn mờ, điểm chết hoặc bọt khí trên tấm nền hiển thị mà các kênh màu thông thường khó phát hiện. Sau đó, mạng mã hóa tự động nén thông tin từ ảnh bốn kênh thành không gian ẩn dung lượng thấp thông qua quá trình tối thiểu hóa sai số tái tạo giữa ảnh đầu vào và ảnh đầu ra. Các véc-tơ ẩn thu được chứa đựng các đặc trưng hình học đại diện cho sản phẩm đạt chuẩn, phục vụ cho việc xây dựng ranh giới phân phối của dữ liệu bình thường.
+
+Mô hình Mạng khí Nơ-ron tăng trưởng Tích lũy Bằng chứng quản lý quá trình cập nhật đồ thị thông qua cơ chế suy giảm tốc độ học theo độ tuổi của từng nút. Các nút mới được tạo ra có tốc độ học cao để nhanh chóng di chuyển về vị trí trung tâm của vùng dữ liệu mới phát sinh. Khi độ tuổi của nút tăng lên theo số bước thời gian, tốc độ học sẽ giảm dần theo hàm mũ nhằm giúp vị trí của nút đạt trạng thái cân bằng và duy trì độ ổn định cấu trúc. Kết hợp với việc tích lũy bằng chứng dữ liệu trong vùng đệm trước khi quyết định chèn nút, hướng tiếp cận này đảm bảo hệ thống phản ứng linh hoạt với các dạng lỗi mới mà không bị ảnh hưởng bởi nhiễu tín hiệu ngẫu nhiên v.v…

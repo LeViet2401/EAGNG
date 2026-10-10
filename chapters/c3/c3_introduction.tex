@@ -1,0 +1,21 @@
+\chapter{Kiến trúc Hệ thống và Thuật toán EAGNG Phân cụm Khuyết tật Trực tuyến}
+\label{chap:c3}
+
+Chương \ref{chap:c3} trình bày chi tiết về kiến trúc hệ thống tổng thể và thiết kế thuật toán Mạng khí Nơ-ron tăng trưởng tích lũy bằng chứng đề xuất cho bài toán tự động phân loại khuyết tật màn hình điện thoại. Giải pháp được xây dựng dựa trên mô hình hai pha nối tiếp nhằm giải quyết đồng thời yêu cầu lọc bỏ sản phẩm đạt chuẩn ở tốc độ cao và phân cụm linh hoạt các dạng lỗi bề mặt phức tạp trong điều kiện vận hành thời gian thực. Hệ thống tích hợp thông tin entropy cục bộ làm kênh dữ liệu thứ tư kết hợp với các mạng nơ-ron sâu chuyên biệt để trích xuất đặc trưng phù hợp cho từng giai đoạn xử lý.
+
+Nội dung chính của chương tập trung làm rõ cấu trúc toán học và các cơ chế cải tiến cốt lõi của thuật toán đề xuất. Pha 1 sử dụng mạng mã hóa tự động để nén không gian biểu diễn và thiết lập ranh giới phân loại bất thường bằng quy tắc ba lần độ lệch chuẩn trên Mạng khí Nơ-ron tăng trưởng ngoại tuyến. Pha 2 phát triển thuật toán Mạng khí Nơ-ron tăng trưởng tích lũy bằng chứng với bốn cơ chế cải tiến chính bao gồm: (i) suy giảm tốc độ học và tích lũy lỗi theo tuổi nút, (ii) trì hoãn chèn nút dựa trên tích lũy bằng chứng kết hợp huấn luyện cục bộ, (iii) phát triển cấu trúc nhạy mật độ, và (iv) kiểm tra sự chồng lấp hộp giới hạn để kiểm soát liên kết cạnh. Toàn bộ quy trình tạo thành một khung xử lý toán học hoàn chỉnh, làm cơ sở lý thuyết cho việc triển khai thực nghiệm ở chương tiếp theo.
+
+\input{chapters/c3/c3_architecture}
+\input{chapters/c3/c3_build_data_contruction}
+\input{chapters/c3/c3_design_autoencoder}
+\input{chapters/c3/c3_phase1}
+\input{chapters/c3/c3_continue_learning_gng}
+\input{chapters/c3/c3_general_image}
+
+
+\section*{Kết luận Chương 3}
+\addcontentsline{toc}{section}{Kết luận Chương 3}
+
+Chương \ref{chap:c3} đã xây dựng hoàn chỉnh cơ sở lý thuyết, kiến trúc hệ thống và thuật toán đề xuất cho bài toán phát hiện bất thường và phân cụm khuyết tật màn hình điện thoại. Bằng việc kết hợp hai pha xử lý nối tiếp, hệ thống đã tối ưu hóa được năng lực tính toán thông qua cơ chế lọc bỏ mẫu đạt chuẩn ở Pha 1 trước khi tiến hành phân loại chuyên sâu ở Pha 2. Kỹ thuật ghép kênh entropy cục bộ vào dữ liệu ảnh nguyên bản đã nâng cao độ nhạy của hệ thống đối với các khuyết tật có độ tương phản thấp trên bề mặt sản phẩm.
+
+Đóng góp lý thuyết quan trọng nhất của chương nằm ở thuật toán Mạng khí Nơ-ron tăng trưởng tích lũy bằng chứng với bốn cơ chế cải tiến đồng bộ. Sự kết hợp giữa động lực tuổi nút, cơ chế hoãn chèn dựa trên bằng chứng, kiểm soát mật độ phát triển nút và điều kiện chồng lấp hộp giới hạn đã giải quyết triệt để các hạn chế về nhiễu dữ liệu và bùng nổ cấu trúc của mô hình truyền thống. Kết quả phân cụm dựa trên thành phần liên kết đồ thị cho phép hệ thống tự động thích ứng với các dạng lỗi mới phát sinh mà không cần quy định trước số lượng cụm khuyết tật. Các mô hình toán học và thiết kế thuật toán trong chương này là nền tảng để tiến hành xây dựng kịch bản thực nghiệm, đánh giá định lượng và đối sánh hiệu năng trong Chương \ref{chap:c4}.

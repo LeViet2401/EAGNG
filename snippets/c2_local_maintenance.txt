@@ -1,0 +1,15 @@
+ local_maintenance (void) 
+    { 
+        while (1) 
+        { 
+            foreach ( s in mySuccessors [0..12] ) 
+            synchronize ( s, database [mypredID...myID] ) 
+        } 
+    } 
+ 
+missing (key) 
+    { 
+        block = get (key) 
+        frag = IDA_get_random_fragment (block) 
+        merkle_tree.insert (key, frag) 
+    }
